@@ -1,30 +1,36 @@
+import { Link } from 'react-router-dom';
+import type { Offer } from '../../mocks/offers';
+
 type OfferCardProps = {
-  id: string;
-  title: string;
-  type: string;
-  price: number;
-  rating: number;
-  imageUrl: string;
-  isPremium: boolean;
-  isFavorite: boolean;
+  offer: Offer;
   onToggleFavorite: (offerId: string) => void;
+  onOfferHover: (offerId: string | null) => void;
 };
 
 function OfferCard({
-  id,
-  title,
-  type,
-  price,
-  rating,
-  imageUrl,
-  isPremium,
-  isFavorite,
+  offer,
   onToggleFavorite,
+  onOfferHover,
 }: OfferCardProps): JSX.Element {
+  const {
+    id,
+    title,
+    type,
+    price,
+    rating,
+    imageUrl,
+    isPremium,
+    isFavorite,
+  } = offer;
+
   const ratingWidth = `${Math.round(rating) * 20}%`;
 
   return (
-    <article className="cities__card place-card">
+    <article
+      className="cities__card place-card"
+      onMouseEnter={() => onOfferHover(id)}
+      onMouseLeave={() => onOfferHover(null)}
+    >
       {isPremium && (
         <div className="place-card__mark">
           <span>Premium</span>
@@ -32,7 +38,7 @@ function OfferCard({
       )}
 
       <div className="cities__image-wrapper place-card__image-wrapper">
-        <a href="/" onClick={(event) => event.preventDefault()}>
+        <Link to={`/offer/${id}`}>
           <img
             className="place-card__image"
             src={imageUrl}
@@ -40,7 +46,7 @@ function OfferCard({
             height={200}
             alt={title}
           />
-        </a>
+        </Link>
       </div>
 
       <div className="place-card__info">
@@ -73,7 +79,7 @@ function OfferCard({
         </div>
 
         <h2 className="place-card__name">
-          <a href="/" onClick={(event) => event.preventDefault()}>{title}</a>
+          <Link to={`/offer/${id}`}>{title}</Link>
         </h2>
 
         <p className="place-card__type">{type}</p>

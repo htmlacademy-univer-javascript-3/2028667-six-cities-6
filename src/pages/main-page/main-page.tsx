@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import OfferCard from '../../components/offer-card/offer-card';
+import OffersList from '../../components/offers-list/offers-list';
+import { cities } from '../../mocks/offers';
+import type { CityName, Offer } from '../../mocks/offers';
 
 type MainPageProps = {
-  offersCount: number;
+  offers: Offer[];
 };
-
-const cities = ['Paris', 'Cologne', 'Brussels', 'Amsterdam', 'Hamburg', 'Dusseldorf'] as const;
 
 const sortingOptions = [
   'Popular',
@@ -14,117 +14,14 @@ const sortingOptions = [
   'Top rated first',
 ] as const;
 
-type CityName = (typeof cities)[number];
 type SortingOption = (typeof sortingOptions)[number];
 
-type Offer = {
-  id: string;
-  city: CityName;
-  title: string;
-  type: string;
-  price: number;
-  rating: number;
-  imageUrl: string;
-  isPremium: boolean;
-  isFavorite: boolean;
-};
-
-const initialOffers: Offer[] = [
-  {
-    id: 'offer-1',
-    city: 'Amsterdam',
-    title: 'Beautiful & luxurious apartment at great location',
-    type: 'Apartment',
-    price: 120,
-    rating: 4.8,
-    imageUrl: 'img/apartment-01.jpg',
-    isPremium: true,
-    isFavorite: false,
-  },
-  {
-    id: 'offer-2',
-    city: 'Amsterdam',
-    title: 'Wood and stone place',
-    type: 'Private room',
-    price: 80,
-    rating: 4.2,
-    imageUrl: 'img/room.jpg',
-    isPremium: false,
-    isFavorite: true,
-  },
-  {
-    id: 'offer-3',
-    city: 'Amsterdam',
-    title: 'Canal View Prinsengracht',
-    type: 'Apartment',
-    price: 132,
-    rating: 4.7,
-    imageUrl: 'img/apartment-02.jpg',
-    isPremium: false,
-    isFavorite: false,
-  },
-  {
-    id: 'offer-4',
-    city: 'Amsterdam',
-    title: 'Nice, cozy, warm big bed apartment',
-    type: 'Apartment',
-    price: 180,
-    rating: 5,
-    imageUrl: 'img/apartment-03.jpg',
-    isPremium: true,
-    isFavorite: false,
-  },
-  {
-    id: 'offer-5',
-    city: 'Paris',
-    title: 'Compact studio near the Seine',
-    type: 'Studio',
-    price: 110,
-    rating: 4.1,
-    imageUrl: 'img/studio-01.jpg',
-    isPremium: false,
-    isFavorite: true,
-  },
-  {
-    id: 'offer-6',
-    city: 'Cologne',
-    title: 'Modern loft with skyline view',
-    type: 'Loft',
-    price: 150,
-    rating: 4.9,
-    imageUrl: 'img/apartment-01.jpg',
-    isPremium: true,
-    isFavorite: false,
-  },
-  {
-    id: 'offer-7',
-    city: 'Brussels',
-    title: 'Quiet flat in the city center',
-    type: 'Apartment',
-    price: 98,
-    rating: 3.9,
-    imageUrl: 'img/apartment-02.jpg',
-    isPremium: false,
-    isFavorite: false,
-  },
-  {
-    id: 'offer-8',
-    city: 'Hamburg',
-    title: 'Bright apartment by the river',
-    type: 'Apartment',
-    price: 140,
-    rating: 4.5,
-    imageUrl: 'img/apartment-03.jpg',
-    isPremium: true,
-    isFavorite: true,
-  },
-];
-
-function MainPage({ offersCount }: MainPageProps): JSX.Element {
+function MainPage({ offers: initialOffers }: MainPageProps): JSX.Element {
   const [activeCity, setActiveCity] = useState<CityName>('Amsterdam');
   const [activeSorting, setActiveSorting] = useState<SortingOption>('Popular');
   const [isSortingOpen, setIsSortingOpen] = useState(false);
   const [offers, setOffers] = useState(initialOffers);
+  const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
 
   const cityOffers = offers.filter((offer) => offer.city === activeCity);
 
@@ -160,6 +57,10 @@ function MainPage({ offersCount }: MainPageProps): JSX.Element {
           : offer
       ))
     );
+  };
+
+  const handleOfferHover = (offerId: string | null) => {
+    setActiveOfferId(offerId);
   };
 
   return (
@@ -231,7 +132,7 @@ function MainPage({ offersCount }: MainPageProps): JSX.Element {
               <b className="places__found">
                 {cityOffers.length > 0
                   ? `${cityOffers.length} places to stay in ${activeCity}`
-                  : `${offersCount} places available soon in ${activeCity}`}
+                  : `${offers.length} places available soon in ${activeCity}`}
               </b>
 
               <form className="places__sorting" action="#" method="get" onSubmit={(event) => event.preventDefault()}>
@@ -268,26 +169,19 @@ function MainPage({ offersCount }: MainPageProps): JSX.Element {
                 </ul>
               </form>
 
-              <div className="cities__places-list places__list tabs__content">
-                {sortedOffers.map((offer) => (
-                  <OfferCard
-                    key={offer.id}
-                    id={offer.id}
-                    title={offer.title}
-                    type={offer.type}
-                    price={offer.price}
-                    rating={offer.rating}
-                    imageUrl={offer.imageUrl}
-                    isPremium={offer.isPremium}
-                    isFavorite={offer.isFavorite}
-                    onToggleFavorite={handleFavoriteToggle}
-                  />
-                ))}
-              </div>
+              <OffersList
+                offers={sortedOffers}
+                onToggleFavorite={handleFavoriteToggle}
+                onOfferHover={handleOfferHover}
+              />
             </section>
 
             <div className="cities__right-section">
-              <section className="cities__map map" aria-label={`Map of places in ${activeCity}`}></section>
+              <section
+                className="cities__map map"
+                aria-label={activeOfferId ? `Map of places in ${activeCity}, active offer ${activeOfferId}` : `Map of places in ${activeCity}`}
+              >
+              </section>
             </div>
           </div>
         </div>
