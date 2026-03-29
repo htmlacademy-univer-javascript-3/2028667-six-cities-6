@@ -8,9 +8,16 @@ type Host = {
   isPro: boolean;
 };
 
+export type Location = {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+};
+
 export type Offer = {
   id: string;
   city: CityName;
+  location: Location;
   title: string;
   type: string;
   price: number;
@@ -30,6 +37,11 @@ export const offers: Offer[] = [
   {
     id: 'amsterdam-canal-view',
     city: 'Amsterdam',
+    location: {
+      latitude: 52.3909553943508,
+      longitude: 4.85309666406198,
+      zoom: 12,
+    },
     title: 'Canal View Prinsengracht',
     type: 'Apartment',
     price: 132,
@@ -55,7 +67,12 @@ export const offers: Offer[] = [
   },
   {
     id: 'paris-seine-studio',
-    city: 'Paris',
+    city: 'Amsterdam',
+    location: {
+      latitude: 52.3609553943508,
+      longitude: 4.85309666406198,
+      zoom: 12,
+    },
     title: 'Compact studio near the Seine',
     type: 'Studio',
     price: 110,
@@ -81,7 +98,12 @@ export const offers: Offer[] = [
   },
   {
     id: 'cologne-skyline-loft',
-    city: 'Cologne',
+    city: 'Amsterdam',
+    location: {
+      latitude: 52.3909553943508,
+      longitude: 4.929309666406198,
+      zoom: 12,
+    },
     title: 'Modern loft with skyline view',
     type: 'Loft',
     price: 150,
@@ -107,7 +129,12 @@ export const offers: Offer[] = [
   },
   {
     id: 'hamburg-river-apartment',
-    city: 'Hamburg',
+    city: 'Amsterdam',
+    location: {
+      latitude: 52.3809553943508,
+      longitude: 4.939309666406198,
+      zoom: 12,
+    },
     title: 'Bright apartment by the river',
     type: 'Apartment',
     price: 140,
