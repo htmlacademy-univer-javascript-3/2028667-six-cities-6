@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import { cities } from '../../mocks/offers';
 import type { CityName, Offer } from '../../mocks/offers';
@@ -177,11 +178,12 @@ function MainPage({ offers: initialOffers }: MainPageProps): JSX.Element {
             </section>
 
             <div className="cities__right-section">
-              <section
+              <Map
                 className="cities__map map"
-                aria-label={activeOfferId ? `Map of places in ${activeCity}, active offer ${activeOfferId}` : `Map of places in ${activeCity}`}
-              >
-              </section>
+                city={sortedOffers[0]?.location ?? { latitude: 52.38333, longitude: 4.9, zoom: 12 }}
+                offers={sortedOffers}
+                selectedOfferId={activeOfferId ?? undefined}
+              />
             </div>
           </div>
         </div>

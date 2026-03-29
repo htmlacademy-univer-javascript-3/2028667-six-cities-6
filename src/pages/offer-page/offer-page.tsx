@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
+import Map from '../../components/map/map';
 import ReviewForm from '../../components/review-form/review-form';
 import type { Offer } from '../../mocks/offers';
 import NotFoundPage from '../not-found-page/not-found-page';
@@ -142,7 +143,12 @@ function OfferPage({ offers }: OfferPageProps): JSX.Element {
               </section>
             </div>
           </div>
-          <section className="offer__map map"></section>
+          <Map
+            className="offer__map"
+            city={offer.location}
+            offers={[offer, ...nearbyOffers]}
+            selectedOfferId={offer.id}
+          />
         </section>
         <div className="container">
           <section className="near-places places">

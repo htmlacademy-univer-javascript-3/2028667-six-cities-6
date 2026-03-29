@@ -1,0 +1,17 @@
+.map--leaflet {
+  background-image: none;
+}
+
+.map--leaflet .leaflet-pane,
+.map--leaflet .leaflet-tile,
+.map--leaflet .leaflet-marker-icon,
+.map--leaflet .leaflet-marker-shadow,
+.map--leaflet .leaflet-tile-container,
+.map--leaflet .leaflet-pane > svg,
+.map--leaflet .leaflet-pane > canvas,
+.map--leaflet .leaflet-zoom-box,
+.map--leaflet .leaflet-image-layer,
+.map--leaflet .leaflet-layer {
+  left: 0;
+  top: 0;
+}
