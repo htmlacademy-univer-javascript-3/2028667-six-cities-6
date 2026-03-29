@@ -3,12 +3,16 @@ import type { Offer } from '../../mocks/offers';
 
 type OfferCardProps = {
   offer: Offer;
-  onToggleFavorite: (offerId: string) => void;
-  onOfferHover: (offerId: string | null) => void;
+  cardClassName?: string;
+  imageWrapperClassName?: string;
+  onToggleFavorite?: (offerId: string) => void;
+  onOfferHover?: (offerId: string | null) => void;
 };
 
 function OfferCard({
   offer,
+  cardClassName = 'cities__card',
+  imageWrapperClassName = 'cities__image-wrapper',
   onToggleFavorite,
   onOfferHover,
 }: OfferCardProps): JSX.Element {
@@ -27,9 +31,9 @@ function OfferCard({
 
   return (
     <article
-      className="cities__card place-card"
-      onMouseEnter={() => onOfferHover(id)}
-      onMouseLeave={() => onOfferHover(null)}
+      className={`${cardClassName} place-card`}
+      onMouseEnter={() => onOfferHover?.(id)}
+      onMouseLeave={() => onOfferHover?.(null)}
     >
       {isPremium && (
         <div className="place-card__mark">
@@ -37,7 +41,7 @@ function OfferCard({
         </div>
       )}
 
-      <div className="cities__image-wrapper place-card__image-wrapper">
+      <div className={`${imageWrapperClassName} place-card__image-wrapper`}>
         <Link to={`/offer/${id}`}>
           <img
             className="place-card__image"
@@ -59,7 +63,7 @@ function OfferCard({
           <button
             className={`place-card__bookmark-button button ${isFavorite ? 'place-card__bookmark-button--active' : ''}`}
             type="button"
-            onClick={() => onToggleFavorite(id)}
+            onClick={() => onToggleFavorite?.(id)}
             aria-pressed={isFavorite}
           >
             <svg className="place-card__bookmark-icon" width={18} height={19}>

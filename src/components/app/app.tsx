@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import FavoritesPage from '../../pages/favorites-page/favorites-page';
 import type { Offer } from '../../mocks/offers';
@@ -11,22 +12,31 @@ type AppProps = {
   offers: Offer[];
 };
 
-function App({ offers }: AppProps): JSX.Element {
+function App({ offers: initialOffers }: AppProps): JSX.Element {
   const isAuthorized = false;
+  const [offers, setOffers] = useState(initialOffers);
+
+  const handleFavoriteToggle = (offerId: string) => {
+    setOffers((currentOffers) => currentOffers.map((offer) => (
+      offer.id === offerId
+        ? { ...offer, isFavorite: !offer.isFavorite }
+        : offer
+    )));
+  };
 
   return (
     <Routes>
-      <Route path="/" element={<MainPage offers={offers} />} />
+      <Route path="/" element={<MainPage offers={offers} onToggleFavorite={handleFavoriteToggle} />} />
       <Route path="/login" element={<LoginPage />} />
       <Route
         path="/favorites"
         element={(
           <PrivateRoute isAuthorized={isAuthorized}>
-            <FavoritesPage offers={offers} />
+            <FavoritesPage offers={offers} onToggleFavorite={handleFavoriteToggle} />
           </PrivateRoute>
         )}
       />
-      <Route path="/offer/:id" element={<OfferPage offers={offers} />} />
+      <Route path="/offer/:id" element={<OfferPage offers={offers} onToggleFavorite={handleFavoriteToggle} />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

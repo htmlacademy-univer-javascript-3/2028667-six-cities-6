@@ -1,14 +1,18 @@
 import { Link, useParams } from 'react-router-dom';
 import Map from '../../components/map/map';
+import OffersList from '../../components/offers-list/offers-list';
 import ReviewForm from '../../components/review-form/review-form';
+import ReviewsList from '../../components/reviews-list/reviews-list';
 import type { Offer } from '../../mocks/offers';
+import { reviews } from '../../mocks/reviews';
 import NotFoundPage from '../not-found-page/not-found-page';
 
 type OfferPageProps = {
   offers: Offer[];
+  onToggleFavorite: (offerId: string) => void;
 };
 
-function OfferPage({ offers }: OfferPageProps): JSX.Element {
+function OfferPage({ offers, onToggleFavorite }: OfferPageProps): JSX.Element {
   const { id } = useParams();
   const offer = offers.find((item) => item.id === id);
 
@@ -70,11 +74,18 @@ function OfferPage({ offers }: OfferPageProps): JSX.Element {
               )}
               <div className="offer__name-wrapper">
                 <h1 className="offer__name">{offer.title}</h1>
-                <button className="offer__bookmark-button button" type="button">
+                <button
+                  className={`offer__bookmark-button button ${offer.isFavorite ? 'offer__bookmark-button--active' : ''}`}
+                  type="button"
+                  onClick={() => onToggleFavorite(offer.id)}
+                  aria-pressed={offer.isFavorite}
+                >
                   <svg className="offer__bookmark-icon" width={31} height={33}>
                     <use xlinkHref="#icon-bookmark"></use>
                   </svg>
-                  <span className="visually-hidden">To bookmarks</span>
+                  <span className="visually-hidden">
+                    {offer.isFavorite ? 'Remove from bookmarks' : 'Add to bookmarks'}
+                  </span>
                 </button>
               </div>
               <div className="offer__rating rating">
@@ -115,30 +126,7 @@ function OfferPage({ offers }: OfferPageProps): JSX.Element {
                 </div>
               </div>
               <section className="offer__reviews reviews">
-                <h2 className="reviews__title">
-                  Reviews
-                  <span className="reviews__amount"> 1</span>
-                </h2>
-                <ul className="reviews__list">
-                  <li className="reviews__item">
-                    <div className="reviews__user user">
-                      <div className="reviews__avatar-wrapper user__avatar-wrapper">
-                        <img className="reviews__avatar user__avatar" src="img/avatar-max.jpg" width={54} height={54} alt="Reviews avatar" />
-                      </div>
-                      <span className="reviews__user-name">Max</span>
-                    </div>
-                    <div className="reviews__info">
-                      <div className="reviews__rating rating">
-                        <div className="reviews__stars rating__stars">
-                          <span style={{ width: '80%' }}></span>
-                          <span className="visually-hidden">Rating</span>
-                        </div>
-                      </div>
-                      <p className="reviews__text">Comfortable place with a convenient location and enough space for a short stay.</p>
-                      <time className="reviews__time" dateTime="2019-04-24">April 2019</time>
-                    </div>
-                  </li>
-                </ul>
+                <ReviewsList reviews={reviews} />
                 <ReviewForm />
               </section>
             </div>
@@ -153,46 +141,13 @@ function OfferPage({ offers }: OfferPageProps): JSX.Element {
         <div className="container">
           <section className="near-places places">
             <h2 className="near-places__title">Other places in the neighbourhood</h2>
-            <div className="near-places__list places__list">
-              {nearbyOffers.map((nearbyOffer) => (
-                <article className="near-places__card place-card" key={nearbyOffer.id}>
-                  {nearbyOffer.isPremium && (
-                    <div className="place-card__mark">
-                      <span>Premium</span>
-                    </div>
-                  )}
-                  <div className="near-places__image-wrapper place-card__image-wrapper">
-                    <Link to={`/offer/${nearbyOffer.id}`}>
-                      <img className="place-card__image" src={nearbyOffer.imageUrl} width={260} height={200} alt={nearbyOffer.title} />
-                    </Link>
-                  </div>
-                  <div className="place-card__info">
-                    <div className="place-card__price-wrapper">
-                      <div className="place-card__price">
-                        <b className="place-card__price-value">&euro;{nearbyOffer.price}</b>
-                        <span className="place-card__price-text">/ night</span>
-                      </div>
-                      <button className={`place-card__bookmark-button button ${nearbyOffer.isFavorite ? 'place-card__bookmark-button--active' : ''}`} type="button">
-                        <svg className="place-card__bookmark-icon" width={18} height={19}>
-                          <use xlinkHref="#icon-bookmark"></use>
-                        </svg>
-                        <span className="visually-hidden">{nearbyOffer.isFavorite ? 'In bookmarks' : 'To bookmarks'}</span>
-                      </button>
-                    </div>
-                    <div className="place-card__rating rating">
-                      <div className="place-card__stars rating__stars">
-                        <span style={{ width: `${Math.round(nearbyOffer.rating) * 20}%` }}></span>
-                        <span className="visually-hidden">Rating</span>
-                      </div>
-                    </div>
-                    <h2 className="place-card__name">
-                      <Link to={`/offer/${nearbyOffer.id}`}>{nearbyOffer.title}</Link>
-                    </h2>
-                    <p className="place-card__type">{nearbyOffer.type}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
+            <OffersList
+              offers={nearbyOffers}
+              className="near-places__list places__list"
+              cardClassName="near-places__card"
+              imageWrapperClassName="near-places__image-wrapper"
+              onToggleFavorite={onToggleFavorite}
+            />
           </section>
         </div>
       </main>

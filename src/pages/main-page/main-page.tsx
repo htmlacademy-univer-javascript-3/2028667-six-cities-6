@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
-import { cities } from '../../mocks/offers';
+import { cities, cityLocations } from '../../mocks/offers';
 import type { CityName, Offer } from '../../mocks/offers';
 
 type MainPageProps = {
   offers: Offer[];
+  onToggleFavorite: (offerId: string) => void;
 };
 
 const sortingOptions = [
@@ -17,11 +18,10 @@ const sortingOptions = [
 
 type SortingOption = (typeof sortingOptions)[number];
 
-function MainPage({ offers: initialOffers }: MainPageProps): JSX.Element {
+function MainPage({ offers, onToggleFavorite }: MainPageProps): JSX.Element {
   const [activeCity, setActiveCity] = useState<CityName>('Amsterdam');
   const [activeSorting, setActiveSorting] = useState<SortingOption>('Popular');
   const [isSortingOpen, setIsSortingOpen] = useState(false);
-  const [offers, setOffers] = useState(initialOffers);
   const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
 
   const cityOffers = offers.filter((offer) => offer.city === activeCity);
@@ -48,16 +48,6 @@ function MainPage({ offers: initialOffers }: MainPageProps): JSX.Element {
   const handleSortingChange = (sortingOption: SortingOption) => {
     setActiveSorting(sortingOption);
     setIsSortingOpen(false);
-  };
-
-  const handleFavoriteToggle = (offerId: string) => {
-    setOffers((currentOffers) =>
-      currentOffers.map((offer) => (
-        offer.id === offerId
-          ? { ...offer, isFavorite: !offer.isFavorite }
-          : offer
-      ))
-    );
   };
 
   const handleOfferHover = (offerId: string | null) => {
@@ -172,7 +162,7 @@ function MainPage({ offers: initialOffers }: MainPageProps): JSX.Element {
 
               <OffersList
                 offers={sortedOffers}
-                onToggleFavorite={handleFavoriteToggle}
+                onToggleFavorite={onToggleFavorite}
                 onOfferHover={handleOfferHover}
               />
             </section>
@@ -180,7 +170,7 @@ function MainPage({ offers: initialOffers }: MainPageProps): JSX.Element {
             <div className="cities__right-section">
               <Map
                 className="cities__map map"
-                city={sortedOffers[0]?.location ?? { latitude: 52.38333, longitude: 4.9, zoom: 12 }}
+                city={cityLocations[activeCity]}
                 offers={sortedOffers}
                 selectedOfferId={activeOfferId ?? undefined}
               />
