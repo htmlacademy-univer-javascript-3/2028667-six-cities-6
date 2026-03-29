@@ -3,9 +3,10 @@ import type { Offer } from '../../mocks/offers';
 
 type FavoritesPageProps = {
   offers: Offer[];
+  onToggleFavorite: (offerId: string) => void;
 };
 
-function FavoritesPage({ offers }: FavoritesPageProps): JSX.Element {
+function FavoritesPage({ offers, onToggleFavorite }: FavoritesPageProps): JSX.Element {
   const favoriteOffers = offers.filter((offer) => offer.isFavorite);
   const groupedOffers = favoriteOffers.reduce<Record<string, Offer[]>>((acc, offer) => {
     if (!acc[offer.city]) {
@@ -81,7 +82,12 @@ function FavoritesPage({ offers }: FavoritesPageProps): JSX.Element {
                                 <b className="place-card__price-value">&euro;{offer.price}</b>
                                 <span className="place-card__price-text">/ night</span>
                               </div>
-                              <button className="place-card__bookmark-button place-card__bookmark-button--active button" type="button">
+                              <button
+                                className="place-card__bookmark-button place-card__bookmark-button--active button"
+                                type="button"
+                                onClick={() => onToggleFavorite(offer.id)}
+                                aria-pressed
+                              >
                                 <svg className="place-card__bookmark-icon" width={18} height={19}>
                                   <use xlinkHref="#icon-bookmark"></use>
                                 </svg>
