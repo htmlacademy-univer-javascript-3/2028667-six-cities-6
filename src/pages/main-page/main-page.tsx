@@ -1,21 +1,21 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { cityLocations } from '../../const';
 import CitiesList from '../../components/cities-list/cities-list';
 import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import SortingOptions from '../../components/sorting-options/sorting-options';
 import type { SortingOption } from '../../components/sorting-options/sorting-options';
-import { cityLocations } from '../../mocks/offers';
-import type { CityName } from '../../mocks/offers';
 import { changeCity } from '../../store/action';
-import type { RootState } from '../../store';
+import type { AppDispatch, RootState } from '../../store';
+import type { CityName } from '../../types/offer';
 
 type MainPageProps = {
   onToggleFavorite: (offerId: string) => void;
 };
 
 function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const activeCity = useSelector((state: RootState) => state.city);
   const allOffers = useSelector((state: RootState) => state.offers);
   const [activeSorting, setActiveSorting] = useState<SortingOption>('Popular');

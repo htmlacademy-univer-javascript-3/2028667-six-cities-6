@@ -1,5 +1,5 @@
-import { cities } from '../../mocks/offers';
-import type { CityName } from '../../mocks/offers';
+import { cities } from '../../const';
+import type { CityName } from '../../types/offer';
 
 type CitiesListProps = {
   activeCity: CityName;

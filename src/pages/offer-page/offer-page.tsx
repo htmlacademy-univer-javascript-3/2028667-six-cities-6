@@ -3,8 +3,8 @@ import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import ReviewForm from '../../components/review-form/review-form';
 import ReviewsList from '../../components/reviews-list/reviews-list';
-import type { Offer } from '../../mocks/offers';
 import { reviews } from '../../mocks/reviews';
+import type { Offer } from '../../types/offer';
 import NotFoundPage from '../not-found-page/not-found-page';
 
 type OfferPageProps = {
