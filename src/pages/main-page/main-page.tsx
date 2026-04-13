@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import CitiesList from '../../components/cities-list/cities-list';
 import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
-import { cities, cityLocations } from '../../mocks/offers';
-import type { CityName, Offer } from '../../mocks/offers';
+import { cityLocations } from '../../mocks/offers';
+import type { CityName } from '../../mocks/offers';
+import { changeCity } from '../../store/action';
+import type { RootState } from '../../store';
 
 type MainPageProps = {
-  offers: Offer[];
   onToggleFavorite: (offerId: string) => void;
 };
 
@@ -18,13 +21,15 @@ const sortingOptions = [
 
 type SortingOption = (typeof sortingOptions)[number];
 
-function MainPage({ offers, onToggleFavorite }: MainPageProps): JSX.Element {
-  const [activeCity, setActiveCity] = useState<CityName>('Amsterdam');
+function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
+  const dispatch = useDispatch();
+  const activeCity = useSelector((state: RootState) => state.city);
+  const allOffers = useSelector((state: RootState) => state.offers);
   const [activeSorting, setActiveSorting] = useState<SortingOption>('Popular');
   const [isSortingOpen, setIsSortingOpen] = useState(false);
   const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
 
-  const cityOffers = offers.filter((offer) => offer.city === activeCity);
+  const cityOffers = allOffers.filter((offer) => offer.city === activeCity);
 
   const sortedOffers = [...cityOffers].sort((firstOffer, secondOffer) => {
     switch (activeSorting) {
@@ -41,7 +46,7 @@ function MainPage({ offers, onToggleFavorite }: MainPageProps): JSX.Element {
   });
 
   const handleCityClick = (city: CityName) => {
-    setActiveCity(city);
+    dispatch(changeCity(city));
     setIsSortingOpen(false);
   };
 
@@ -78,7 +83,7 @@ function MainPage({ offers, onToggleFavorite }: MainPageProps): JSX.Element {
                     <div className="header__avatar-wrapper user__avatar-wrapper"></div>
                     <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
                     <span className="header__favorite-count">
-                      {offers.filter((offer) => offer.isFavorite).length}
+                      {allOffers.filter((offer) => offer.isFavorite).length}
                     </span>
                   </a>
                 </li>
@@ -98,21 +103,7 @@ function MainPage({ offers, onToggleFavorite }: MainPageProps): JSX.Element {
         <h1 className="visually-hidden">Cities</h1>
 
         <div className="tabs">
-          <section className="locations container">
-            <ul className="locations__list tabs__list">
-              {cities.map((city) => (
-                <li className="locations__item" key={city}>
-                  <button
-                    className={`locations__item-link tabs__item button ${activeCity === city ? 'tabs__item--active' : ''}`}
-                    type="button"
-                    onClick={() => handleCityClick(city)}
-                  >
-                    <span>{city}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <CitiesList activeCity={activeCity} onCityClick={handleCityClick} />
         </div>
 
         <div className="cities">
@@ -123,7 +114,7 @@ function MainPage({ offers, onToggleFavorite }: MainPageProps): JSX.Element {
               <b className="places__found">
                 {cityOffers.length > 0
                   ? `${cityOffers.length} places to stay in ${activeCity}`
-                  : `${offers.length} places available soon in ${activeCity}`}
+                  : `${allOffers.length} places available soon in ${activeCity}`}
               </b>
 
               <form className="places__sorting" action="#" method="get" onSubmit={(event) => event.preventDefault()}>
