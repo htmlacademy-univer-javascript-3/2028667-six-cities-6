@@ -1,16 +1,17 @@
 import { Action } from './action';
 import type { Actions } from './action';
-import { offers } from '../mocks/offers';
-import type { CityName, Offer } from '../mocks/offers';
+import type { CityName, Offer } from '../types/offer';
 
 export type State = {
   city: CityName;
   offers: Offer[];
+  isOffersLoading: boolean;
 };
 
 export const initialState: State = {
   city: 'Paris',
-  offers,
+  offers: [],
+  isOffersLoading: true,
 };
 
 export function reducer(state: State = initialState, action: Actions): State {
@@ -24,6 +25,11 @@ export function reducer(state: State = initialState, action: Actions): State {
       return {
         ...state,
         offers: action.payload,
+      };
+    case Action.SetOffersLoading:
+      return {
+        ...state,
+        isOffersLoading: action.payload,
       };
     default:
       return state;

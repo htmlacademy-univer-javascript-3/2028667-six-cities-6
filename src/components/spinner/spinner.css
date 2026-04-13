@@ -1,0 +1,26 @@
+.spinner {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+}
+
+.spinner__loader {
+  width: 64px;
+  height: 64px;
+  border: 6px solid rgba(68, 68, 68, 0.2);
+  border-top-color: #ff9000;
+  border-radius: 50%;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
