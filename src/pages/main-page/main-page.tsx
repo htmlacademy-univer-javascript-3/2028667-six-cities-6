@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import CitiesList from '../../components/cities-list/cities-list';
 import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
+import SortingOptions from '../../components/sorting-options/sorting-options';
+import type { SortingOption } from '../../components/sorting-options/sorting-options';
 import { cityLocations } from '../../mocks/offers';
 import type { CityName } from '../../mocks/offers';
 import { changeCity } from '../../store/action';
@@ -11,15 +13,6 @@ import type { RootState } from '../../store';
 type MainPageProps = {
   onToggleFavorite: (offerId: string) => void;
 };
-
-const sortingOptions = [
-  'Popular',
-  'Price: low to high',
-  'Price: high to low',
-  'Top rated first',
-] as const;
-
-type SortingOption = (typeof sortingOptions)[number];
 
 function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
   const dispatch = useDispatch();
@@ -117,39 +110,12 @@ function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
                   : `${allOffers.length} places available soon in ${activeCity}`}
               </b>
 
-              <form className="places__sorting" action="#" method="get" onSubmit={(event) => event.preventDefault()}>
-                <span className="places__sorting-caption">Sort by</span>
-
-                <button
-                  className="places__sorting-type button"
-                  type="button"
-                  onClick={() => setIsSortingOpen((currentState) => !currentState)}
-                >
-                  {activeSorting}
-                  <svg className="places__sorting-arrow" width={7} height={4}>
-                    <use xlinkHref="#icon-arrow-select"></use>
-                  </svg>
-                </button>
-
-                <ul className={`places__options places__options--custom ${isSortingOpen ? 'places__options--opened' : ''}`}>
-                  {sortingOptions.map((sortingOption) => (
-                    <li
-                      className={`places__option ${activeSorting === sortingOption ? 'places__option--active' : ''}`}
-                      tabIndex={0}
-                      key={sortingOption}
-                      onClick={() => handleSortingChange(sortingOption)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          handleSortingChange(sortingOption);
-                        }
-                      }}
-                    >
-                      {sortingOption}
-                    </li>
-                  ))}
-                </ul>
-              </form>
+              <SortingOptions
+                activeSorting={activeSorting}
+                isOpen={isSortingOpen}
+                onSortingToggle={() => setIsSortingOpen((currentState) => !currentState)}
+                onSortingChange={handleSortingChange}
+              />
 
               <OffersList
                 offers={sortedOffers}
