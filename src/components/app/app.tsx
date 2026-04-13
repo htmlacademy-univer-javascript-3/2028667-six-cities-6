@@ -26,7 +26,7 @@ function App({ offers: initialOffers }: AppProps): JSX.Element {
 
   return (
     <Routes>
-      <Route path="/" element={<MainPage offers={offers} onToggleFavorite={handleFavoriteToggle} />} />
+      <Route path="/" element={<MainPage onToggleFavorite={handleFavoriteToggle} />} />
       <Route path="/login" element={<LoginPage />} />
       <Route
         path="/favorites"
