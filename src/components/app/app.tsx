@@ -48,6 +48,7 @@ function App(): JSX.Element {
     <Routes>
       <Route path="/" element={<MainPage onToggleFavorite={handleFavoriteToggle} />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/404" element={<NotFoundPage />} />
       <Route
         path="/favorites"
         element={(
@@ -56,7 +57,7 @@ function App(): JSX.Element {
           </PrivateRoute>
         )}
       />
-      <Route path="/offer/:id" element={<OfferPage offers={offers} onToggleFavorite={handleFavoriteToggle} />} />
+      <Route path="/offer/:id" element={<OfferPage onToggleFavorite={handleFavoriteToggle} />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

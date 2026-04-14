@@ -1,28 +1,42 @@
-import { Link, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, Navigate, useParams } from 'react-router-dom';
+import { AuthorizationStatus } from '../../const';
 import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import ReviewForm from '../../components/review-form/review-form';
 import ReviewsList from '../../components/reviews-list/reviews-list';
-import { reviews } from '../../mocks/reviews';
-import type { Offer } from '../../types/offer';
-import NotFoundPage from '../not-found-page/not-found-page';
+import type { AppDispatch, RootState } from '../../store';
+import { fetchOfferPageDataAction } from '../../store/api-actions';
+import Spinner from '../../components/spinner/spinner';
 
 type OfferPageProps = {
-  offers: Offer[];
   onToggleFavorite: (offerId: string) => void;
 };
 
-function OfferPage({ offers, onToggleFavorite }: OfferPageProps): JSX.Element {
+function OfferPage({ onToggleFavorite }: OfferPageProps): JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
   const { id } = useParams();
-  const offer = offers.find((item) => item.id === id);
+  const offer = useSelector((state: RootState) => state.currentOffer);
+  const nearbyOffers = useSelector((state: RootState) => state.nearbyOffers);
+  const reviews = useSelector((state: RootState) => state.reviews);
+  const offers = useSelector((state: RootState) => state.offers);
+  const isOfferLoading = useSelector((state: RootState) => state.isOfferLoading);
+  const authorizationStatus = useSelector((state: RootState) => state.authorizationStatus);
 
-  if (!offer) {
-    return <NotFoundPage />;
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchOfferPageDataAction(id));
+    }
+  }, [dispatch, id]);
+
+  if (isOfferLoading) {
+    return <Spinner />;
   }
 
-  const nearbyOffers = offers
-    .filter((item) => item.city === offer.city && item.id !== offer.id)
-    .slice(0, 3);
+  if (!offer) {
+    return <Navigate to="/404" replace />;
+  }
   const ratingWidth = `${Math.round(offer.rating) * 20}%`;
 
   return (
@@ -127,7 +141,7 @@ function OfferPage({ offers, onToggleFavorite }: OfferPageProps): JSX.Element {
               </div>
               <section className="offer__reviews reviews">
                 <ReviewsList reviews={reviews} />
-                <ReviewForm />
+                {authorizationStatus === AuthorizationStatus.Auth && <ReviewForm offerId={offer.id} />}
               </section>
             </div>
           </div>

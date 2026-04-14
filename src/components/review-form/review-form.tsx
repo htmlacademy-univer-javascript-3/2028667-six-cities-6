@@ -1,4 +1,7 @@
 import { ChangeEvent, FormEvent, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { postReviewAction } from '../../store/api-actions';
+import type { AppDispatch, RootState } from '../../store';
 
 const ratingOptions = [
   { value: 5, title: 'perfect' },
@@ -8,7 +11,13 @@ const ratingOptions = [
   { value: 1, title: 'terribly' },
 ] as const;
 
-function ReviewForm(): JSX.Element {
+type ReviewFormProps = {
+  offerId: string;
+};
+
+function ReviewForm({ offerId }: ReviewFormProps): JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
+  const isReviewSubmitting = useSelector((state: RootState) => state.isReviewSubmitting);
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState('');
 
@@ -20,11 +29,19 @@ function ReviewForm(): JSX.Element {
     setComment(event.target.value);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (rating === null) {
+      return;
+    }
+
+    await dispatch(postReviewAction(offerId, { comment, rating }));
+    setRating(null);
+    setComment('');
   };
 
-  const isSubmitDisabled = rating === null || comment.trim().length < 50;
+  const isSubmitDisabled = rating === null || comment.trim().length < 50 || isReviewSubmitting;
 
   return (
     <form className="reviews__form form" action="#" method="post" onSubmit={handleSubmit}>
@@ -40,6 +57,7 @@ function ReviewForm(): JSX.Element {
               type="radio"
               checked={rating === value}
               onChange={handleRatingChange}
+              disabled={isReviewSubmitting}
             />
             <label htmlFor={`${value}-stars`} className="reviews__rating-label form__rating-label" title={title}>
               <svg className="form__star-image" width={37} height={33}>
@@ -56,6 +74,7 @@ function ReviewForm(): JSX.Element {
         placeholder="Tell how was your stay, what you like and what can be improved"
         value={comment}
         onChange={handleCommentChange}
+        disabled={isReviewSubmitting}
       >
       </textarea>
       <div className="reviews__button-wrapper">
