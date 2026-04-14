@@ -11,6 +11,12 @@ type ServerCity = {
   location: ServerLocation;
 };
 
+type ServerHost = {
+  name: string;
+  avatarUrl: string;
+  isPro: boolean;
+};
+
 export type ServerOffer = {
   id: string;
   title: string;
@@ -22,6 +28,12 @@ export type ServerOffer = {
   isFavorite: boolean;
   isPremium: boolean;
   rating: number;
+  description: string;
+  bedrooms: number;
+  goods: string[];
+  host: ServerHost;
+  images: string[];
+  maxAdults: number;
 };
 
 export function adaptServerOfferToClientOffer(serverOffer: ServerOffer): Offer {
@@ -36,15 +48,11 @@ export function adaptServerOfferToClientOffer(serverOffer: ServerOffer): Offer {
     imageUrl: serverOffer.previewImage,
     isPremium: serverOffer.isPremium,
     isFavorite: serverOffer.isFavorite,
-    description: '',
-    bedrooms: 0,
-    maxAdults: 0,
-    goods: [],
-    host: {
-      name: '',
-      avatarUrl: '',
-      isPro: false,
-    },
-    images: [serverOffer.previewImage],
+    description: serverOffer.description,
+    bedrooms: serverOffer.bedrooms,
+    maxAdults: serverOffer.maxAdults,
+    goods: serverOffer.goods,
+    host: serverOffer.host,
+    images: serverOffer.images,
   };
 }
