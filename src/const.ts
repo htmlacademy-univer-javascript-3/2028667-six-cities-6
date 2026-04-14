@@ -2,8 +2,17 @@ import type { CityName, Location } from './types/offer';
 
 export const BACKEND_URL = 'https://14.design.htmlacademy.pro/six-cities';
 export const REQUEST_TIMEOUT = 5000;
+export const AUTH_TOKEN_KEY_NAME = 'six-cities-token';
 
 export const cities = ['Paris', 'Cologne', 'Brussels', 'Amsterdam', 'Hamburg', 'Dusseldorf'] as const;
+
+export const AuthorizationStatus = {
+  Auth: 'AUTH',
+  NoAuth: 'NO_AUTH',
+  Unknown: 'UNKNOWN',
+} as const;
+
+export type AuthorizationStatus = typeof AuthorizationStatus[keyof typeof AuthorizationStatus];
 
 export const cityLocations: Record<CityName, Location> = {
   Paris: {

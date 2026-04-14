@@ -1,12 +1,13 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { cityLocations } from '../../const';
+import { AuthorizationStatus, cityLocations } from '../../const';
 import CitiesList from '../../components/cities-list/cities-list';
 import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import SortingOptions from '../../components/sorting-options/sorting-options';
 import type { SortingOption } from '../../components/sorting-options/sorting-options';
-import { changeCity } from '../../store/action';
+import { changeCity, requireAuthorization } from '../../store/action';
 import type { AppDispatch, RootState } from '../../store';
 import type { CityName } from '../../types/offer';
 
@@ -18,6 +19,7 @@ function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const activeCity = useSelector((state: RootState) => state.city);
   const allOffers = useSelector((state: RootState) => state.offers);
+  const authorizationStatus = useSelector((state: RootState) => state.authorizationStatus);
   const [activeSorting, setActiveSorting] = useState<SortingOption>('Popular');
   const [isSortingOpen, setIsSortingOpen] = useState(false);
   const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
@@ -52,6 +54,10 @@ function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
     setActiveOfferId(offerId);
   };
 
+  const handleSignOut = () => {
+    dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+  };
+
   return (
     <div className="page page--gray page--main">
       <header className="header">
@@ -71,21 +77,32 @@ function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
 
             <nav className="header__nav">
               <ul className="header__nav-list">
-                <li className="header__nav-item user">
-                  <a className="header__nav-link header__nav-link--profile" href="/" onClick={(event) => event.preventDefault()}>
-                    <div className="header__avatar-wrapper user__avatar-wrapper"></div>
-                    <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
-                    <span className="header__favorite-count">
-                      {allOffers.filter((offer) => offer.isFavorite).length}
-                    </span>
-                  </a>
-                </li>
+                {authorizationStatus === AuthorizationStatus.Auth ? (
+                  <>
+                    <li className="header__nav-item user">
+                      <Link className="header__nav-link header__nav-link--profile" to="/favorites">
+                        <div className="header__avatar-wrapper user__avatar-wrapper"></div>
+                        <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
+                        <span className="header__favorite-count">
+                          {allOffers.filter((offer) => offer.isFavorite).length}
+                        </span>
+                      </Link>
+                    </li>
 
-                <li className="header__nav-item">
-                  <a className="header__nav-link" href="/" onClick={(event) => event.preventDefault()}>
-                    <span className="header__signout">Sign out</span>
-                  </a>
-                </li>
+                    <li className="header__nav-item">
+                      <Link className="header__nav-link" to="/login" onClick={handleSignOut}>
+                        <span className="header__signout">Sign out</span>
+                      </Link>
+                    </li>
+                  </>
+                ) : (
+                  <li className="header__nav-item user">
+                    <Link className="header__nav-link header__nav-link--profile" to="/login">
+                      <div className="header__avatar-wrapper user__avatar-wrapper"></div>
+                      <span className="header__login">Sign in</span>
+                    </Link>
+                  </li>
+                )}
               </ul>
             </nav>
           </div>

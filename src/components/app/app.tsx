@@ -7,19 +7,19 @@ import MainPage from '../../pages/main-page/main-page';
 import NotFoundPage from '../../pages/not-found-page/not-found-page';
 import OfferPage from '../../pages/offer-page/offer-page';
 import { fillOffers, setOffersLoading } from '../../store/action';
-import { fetchOffersAction } from '../../store/api-actions';
+import { checkAuthAction, fetchOffersAction } from '../../store/api-actions';
 import type { AppDispatch, RootState } from '../../store';
 import PrivateRoute from '../private-route/private-route';
 import Spinner from '../spinner/spinner';
 
 function App(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
-  const isAuthorized = false;
   const offers = useSelector((state: RootState) => state.offers);
   const isOffersLoading = useSelector((state: RootState) => state.isOffersLoading);
 
   useEffect(() => {
     dispatch(fetchOffersAction());
+    dispatch(checkAuthAction());
   }, [dispatch]);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ function App(): JSX.Element {
       <Route
         path="/favorites"
         element={(
-          <PrivateRoute isAuthorized={isAuthorized}>
+          <PrivateRoute>
             <FavoritesPage offers={offers} onToggleFavorite={handleFavoriteToggle} />
           </PrivateRoute>
         )}

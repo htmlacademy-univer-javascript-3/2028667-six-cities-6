@@ -1,9 +1,11 @@
 import type { CityName, Offer } from '../types/offer';
+import type { AuthorizationStatus } from '../const';
 
 export const Action = {
   ChangeCity: 'city/change',
   FillOffers: 'offers/fill',
   SetOffersLoading: 'offers/setLoading',
+  RequireAuthorization: 'user/requireAuthorization',
 } as const;
 
 export type ActionType = typeof Action[keyof typeof Action];
@@ -23,7 +25,12 @@ export type SetOffersLoadingAction = {
   payload: boolean;
 };
 
-export type Actions = ChangeCityAction | FillOffersAction | SetOffersLoadingAction;
+export type RequireAuthorizationAction = {
+  type: typeof Action.RequireAuthorization;
+  payload: AuthorizationStatus;
+};
+
+export type Actions = ChangeCityAction | FillOffersAction | SetOffersLoadingAction | RequireAuthorizationAction;
 
 export const changeCity = (city: CityName): ChangeCityAction => ({
   type: Action.ChangeCity,
@@ -38,4 +45,9 @@ export const fillOffers = (offers: Offer[]): FillOffersAction => ({
 export const setOffersLoading = (isLoading: boolean): SetOffersLoadingAction => ({
   type: Action.SetOffersLoading,
   payload: isLoading,
+});
+
+export const requireAuthorization = (authorizationStatus: AuthorizationStatus): RequireAuthorizationAction => ({
+  type: Action.RequireAuthorization,
+  payload: authorizationStatus,
 });
