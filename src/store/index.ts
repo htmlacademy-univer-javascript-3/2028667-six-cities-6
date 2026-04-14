@@ -1,8 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { createAPI } from '../api';
+import { AuthorizationStatus } from '../const';
+import { requireAuthorization } from './action';
 import { reducer } from './reducer';
 
-export const api = createAPI();
+export const api = createAPI(() => {
+  store.dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+});
 
 export const store = configureStore({
   reducer,
