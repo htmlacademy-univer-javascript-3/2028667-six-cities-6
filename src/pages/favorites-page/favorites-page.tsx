@@ -1,21 +1,18 @@
+import { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import type { Offer } from '../../types/offer';
+import type { AppDispatch } from '../../store';
+import { toggleFavorite } from '../../store/action';
+import { selectFavoriteOffersCount, selectGroupedFavoriteOffers } from '../../store/selectors';
 
-type FavoritesPageProps = {
-  offers: Offer[];
-  onToggleFavorite: (offerId: string) => void;
-};
+function FavoritesPage(): JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
+  const favoriteOffersCount = useSelector(selectFavoriteOffersCount);
+  const groupedOffers = useSelector(selectGroupedFavoriteOffers);
 
-function FavoritesPage({ offers, onToggleFavorite }: FavoritesPageProps): JSX.Element {
-  const favoriteOffers = offers.filter((offer) => offer.isFavorite);
-  const groupedOffers = favoriteOffers.reduce<Record<string, Offer[]>>((acc, offer) => {
-    if (!acc[offer.city]) {
-      acc[offer.city] = [];
-    }
-
-    acc[offer.city].push(offer);
-    return acc;
-  }, {});
+  const handleFavoriteToggle = useCallback((offerId: string) => {
+    dispatch(toggleFavorite(offerId));
+  }, [dispatch]);
 
   return (
     <div className="page">
@@ -33,7 +30,7 @@ function FavoritesPage({ offers, onToggleFavorite }: FavoritesPageProps): JSX.El
                   <Link className="header__nav-link header__nav-link--profile" to="/favorites">
                     <div className="header__avatar-wrapper user__avatar-wrapper"></div>
                     <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
-                    <span className="header__favorite-count">{favoriteOffers.length}</span>
+                    <span className="header__favorite-count">{favoriteOffersCount}</span>
                   </Link>
                 </li>
                 <li className="header__nav-item">
@@ -85,7 +82,7 @@ function FavoritesPage({ offers, onToggleFavorite }: FavoritesPageProps): JSX.El
                               <button
                                 className="place-card__bookmark-button place-card__bookmark-button--active button"
                                 type="button"
-                                onClick={() => onToggleFavorite(offer.id)}
+                                onClick={() => handleFavoriteToggle(offer.id)}
                                 aria-pressed
                               >
                                 <svg className="place-card__bookmark-icon" width={18} height={19}>

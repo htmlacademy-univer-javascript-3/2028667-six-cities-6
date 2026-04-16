@@ -3,12 +3,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { AuthorizationStatus } from '../../const';
 import { loginAction } from '../../store/api-actions';
-import type { AppDispatch, RootState } from '../../store';
+import type { AppDispatch } from '../../store';
+import { selectAuthorizationStatus } from '../../store/selectors';
 
 function LoginPage(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const authorizationStatus = useSelector((state: RootState) => state.authorizationStatus);
+  const authorizationStatus = useSelector(selectAuthorizationStatus);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -16,11 +17,12 @@ function LoginPage(): JSX.Element {
     return <Navigate to="/" />;
   }
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    await dispatch(loginAction({ email, password }));
-    navigate('/');
+    void dispatch(loginAction({ email, password })).then(() => {
+      navigate('/');
+    });
   };
 
   return (

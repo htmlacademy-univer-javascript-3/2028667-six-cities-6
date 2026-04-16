@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Offer, Location } from '../../types/offer';
@@ -83,4 +83,6 @@ function Map({ className, city, offers, selectedOfferId }: MapProps): JSX.Elemen
   return <section className={`${className} map map--leaflet`} ref={mapRef}></section>;
 }
 
-export default Map;
+const MemoizedMap = memo(Map);
+
+export default MemoizedMap;

@@ -6,16 +6,16 @@ import LoginPage from '../../pages/login-page/login-page';
 import MainPage from '../../pages/main-page/main-page';
 import NotFoundPage from '../../pages/not-found-page/not-found-page';
 import OfferPage from '../../pages/offer-page/offer-page';
-import { fillOffers, setOffersLoading } from '../../store/action';
+import { setOffersLoading } from '../../store/action';
 import { checkAuthAction, fetchOffersAction } from '../../store/api-actions';
-import type { AppDispatch, RootState } from '../../store';
+import type { AppDispatch } from '../../store';
+import { selectIsOffersLoading } from '../../store/selectors';
 import PrivateRoute from '../private-route/private-route';
 import Spinner from '../spinner/spinner';
 
 function App(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
-  const offers = useSelector((state: RootState) => state.offers);
-  const isOffersLoading = useSelector((state: RootState) => state.isOffersLoading);
+  const isOffersLoading = useSelector(selectIsOffersLoading);
 
   useEffect(() => {
     dispatch(fetchOffersAction());
@@ -32,32 +32,24 @@ function App(): JSX.Element {
     };
   }, [dispatch]);
 
-  const handleFavoriteToggle = (offerId: string) => {
-    dispatch(fillOffers(offers.map((offer) => (
-      offer.id === offerId
-        ? { ...offer, isFavorite: !offer.isFavorite }
-        : offer
-    ))));
-  };
-
-  if (isOffersLoading && offers.length === 0) {
+  if (isOffersLoading) {
     return <Spinner />;
   }
 
   return (
     <Routes>
-      <Route path="/" element={<MainPage onToggleFavorite={handleFavoriteToggle} />} />
+      <Route path="/" element={<MainPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/404" element={<NotFoundPage />} />
       <Route
         path="/favorites"
         element={(
           <PrivateRoute>
-            <FavoritesPage offers={offers} onToggleFavorite={handleFavoriteToggle} />
+            <FavoritesPage />
           </PrivateRoute>
         )}
       />
-      <Route path="/offer/:id" element={<OfferPage onToggleFavorite={handleFavoriteToggle} />} />
+      <Route path="/offer/:id" element={<OfferPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
