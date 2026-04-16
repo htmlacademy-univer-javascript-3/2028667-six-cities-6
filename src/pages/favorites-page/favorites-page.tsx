@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import type { AppDispatch } from '../../store';
-import { toggleFavorite } from '../../store/action';
+import { updateFavoriteStatusAction } from '../../store/api-actions';
 import { selectFavoriteOffersCount, selectGroupedFavoriteOffers } from '../../store/selectors';
 
 function FavoritesPage(): JSX.Element {
@@ -11,8 +11,16 @@ function FavoritesPage(): JSX.Element {
   const groupedOffers = useSelector(selectGroupedFavoriteOffers);
 
   const handleFavoriteToggle = useCallback((offerId: string) => {
-    dispatch(toggleFavorite(offerId));
-  }, [dispatch]);
+    const offer = Object.values(groupedOffers)
+      .flat()
+      .find((groupedOffer) => groupedOffer.id === offerId);
+
+    if (!offer) {
+      return;
+    }
+
+    void dispatch(updateFavoriteStatusAction(offerId, offer.isFavorite));
+  }, [dispatch, groupedOffers]);
 
   return (
     <div className="page">

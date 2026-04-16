@@ -19,12 +19,12 @@ export function catalogReducer(state: CatalogState = initialState, action: Actio
         ...state,
         offers: action.payload,
       };
-    case Action.ToggleFavorite:
+    case Action.UpdateFavoriteOffer:
       return {
         ...state,
         offers: state.offers.map((offer) => (
-          offer.id === action.payload
-            ? { ...offer, isFavorite: !offer.isFavorite }
+          offer.id === action.payload.id
+            ? action.payload
             : offer
         )),
       };

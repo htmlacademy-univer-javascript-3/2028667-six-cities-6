@@ -5,7 +5,7 @@ import type { Review } from '../types/review';
 export const Action = {
   ChangeCity: 'city/change',
   FillOffers: 'offers/fill',
-  ToggleFavorite: 'offers/toggleFavorite',
+  UpdateFavoriteOffer: 'offers/updateFavoriteOffer',
   FillNearbyOffers: 'offers/fillNearby',
   FillCurrentOffer: 'offers/fillCurrent',
   FillReviews: 'reviews/fill',
@@ -27,9 +27,9 @@ export type FillOffersAction = {
   payload: Offer[];
 };
 
-export type ToggleFavoriteAction = {
-  type: typeof Action.ToggleFavorite;
-  payload: string;
+export type UpdateFavoriteOfferAction = {
+  type: typeof Action.UpdateFavoriteOffer;
+  payload: Offer;
 };
 
 export type FillNearbyOffersAction = {
@@ -70,7 +70,7 @@ export type RequireAuthorizationAction = {
 export type Actions =
   ChangeCityAction |
   FillOffersAction |
-  ToggleFavoriteAction |
+  UpdateFavoriteOfferAction |
   FillNearbyOffersAction |
   FillCurrentOfferAction |
   FillReviewsAction |
@@ -89,9 +89,9 @@ export const fillOffers = (offers: Offer[]): FillOffersAction => ({
   payload: offers,
 });
 
-export const toggleFavorite = (offerId: string): ToggleFavoriteAction => ({
-  type: Action.ToggleFavorite,
-  payload: offerId,
+export const updateFavoriteOffer = (offer: Offer): UpdateFavoriteOfferAction => ({
+  type: Action.UpdateFavoriteOffer,
+  payload: offer,
 });
 
 export const fillNearbyOffers = (offers: Offer[]): FillNearbyOffersAction => ({

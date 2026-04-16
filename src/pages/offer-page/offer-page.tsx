@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AuthorizationStatus } from '../../const';
 import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import ReviewForm from '../../components/review-form/review-form';
 import ReviewsList from '../../components/reviews-list/reviews-list';
 import type { AppDispatch } from '../../store';
-import { fetchOfferPageDataAction } from '../../store/api-actions';
+import { fetchOfferPageDataAction, updateFavoriteStatusAction } from '../../store/api-actions';
 import Spinner from '../../components/spinner/spinner';
-import { toggleFavorite } from '../../store/action';
 import {
   selectAuthorizationStatus,
   selectCurrentOffer,
@@ -21,6 +20,7 @@ import {
 
 function OfferPage(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { id } = useParams();
   const offer = useSelector(selectCurrentOffer);
   const nearbyOffers = useSelector(selectNearbyOffers);
@@ -39,8 +39,19 @@ function OfferPage(): JSX.Element {
   const offerMapItems = useMemo(() => (offer ? [offer, ...nearbyOffers] : nearbyOffers), [offer, nearbyOffers]);
 
   const handleFavoriteToggle = useCallback((offerId: string) => {
-    dispatch(toggleFavorite(offerId));
-  }, [dispatch]);
+    if (authorizationStatus !== AuthorizationStatus.Auth) {
+      navigate('/login');
+      return;
+    }
+
+    const favoriteOffer = offerMapItems.find((item) => item.id === offerId);
+
+    if (!favoriteOffer) {
+      return;
+    }
+
+    void dispatch(updateFavoriteStatusAction(offerId, favoriteOffer.isFavorite));
+  }, [authorizationStatus, dispatch, navigate, offerMapItems]);
 
   if (isOfferLoading) {
     return <Spinner />;
