@@ -1,19 +1,22 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AuthorizationStatus, cityLocations } from '../../const';
 import CitiesList from '../../components/cities-list/cities-list';
+import MainEmpty from '../../components/main-empty/main-empty';
 import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import SortingOptions from '../../components/sorting-options/sorting-options';
 import type { SortingOption } from '../../components/sorting-options/const';
-import { changeCity, requireAuthorization, toggleFavorite } from '../../store/action';
+import { changeCity, requireAuthorization } from '../../store/action';
 import type { AppDispatch } from '../../store';
+import { updateFavoriteStatusAction } from '../../store/api-actions';
 import { selectActiveCity, selectAuthorizationStatus, selectFavoriteOffersCount, selectOffersByActiveCity } from '../../store/selectors';
 import type { CityName } from '../../types/offer';
 
 function MainPage(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const activeCity = useSelector(selectActiveCity);
   const cityOffers = useSelector(selectOffersByActiveCity);
   const favoriteOffersCount = useSelector(selectFavoriteOffersCount);
@@ -57,12 +60,25 @@ function MainPage(): JSX.Element {
   }, []);
 
   const handleFavoriteToggle = useCallback((offerId: string) => {
-    dispatch(toggleFavorite(offerId));
-  }, [dispatch]);
+    if (authorizationStatus !== AuthorizationStatus.Auth) {
+      navigate('/login');
+      return;
+    }
+
+    const offer = sortedOffers.find((item) => item.id === offerId);
+
+    if (!offer) {
+      return;
+    }
+
+    void dispatch(updateFavoriteStatusAction(offerId, offer.isFavorite));
+  }, [authorizationStatus, dispatch, navigate, sortedOffers]);
 
   const handleSignOut = useCallback(() => {
     dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
   }, [dispatch]);
+
+  const hasOffers = cityOffers.length > 0;
 
   return (
     <div className="page page--gray page--main">
@@ -115,48 +131,50 @@ function MainPage(): JSX.Element {
         </div>
       </header>
 
-      <main className="page__main page__main--index">
+      <main className={`page__main page__main--index ${hasOffers ? '' : 'page__main--index-empty'}`.trim()}>
         <h1 className="visually-hidden">Cities</h1>
 
         <div className="tabs">
           <CitiesList activeCity={activeCity} onCityClick={handleCityClick} />
         </div>
 
-        <div className="cities">
-          <div className="cities__places-container container">
-            <section className="cities__places places">
-              <h2 className="visually-hidden">Places</h2>
+        {hasOffers ? (
+          <div className="cities">
+            <div className="cities__places-container container">
+              <section className="cities__places places">
+                <h2 className="visually-hidden">Places</h2>
 
-              <b className="places__found">
-                {cityOffers.length > 0
-                  ? `${cityOffers.length} places to stay in ${activeCity}`
-                  : `0 places available soon in ${activeCity}`}
-              </b>
+                <b className="places__found">
+                  {cityOffers.length} places to stay in {activeCity}
+                </b>
 
-              <SortingOptions
-                activeSorting={activeSorting}
-                isOpen={isSortingOpen}
-                onSortingToggle={handleSortingToggle}
-                onSortingChange={handleSortingChange}
-              />
+                <SortingOptions
+                  activeSorting={activeSorting}
+                  isOpen={isSortingOpen}
+                  onSortingToggle={handleSortingToggle}
+                  onSortingChange={handleSortingChange}
+                />
 
-              <OffersList
-                offers={sortedOffers}
-                onToggleFavorite={handleFavoriteToggle}
-                onOfferHover={handleOfferHover}
-              />
-            </section>
+                <OffersList
+                  offers={sortedOffers}
+                  onToggleFavorite={handleFavoriteToggle}
+                  onOfferHover={handleOfferHover}
+                />
+              </section>
 
-            <div className="cities__right-section">
-              <Map
-                className="cities__map map"
-                city={cityLocations[activeCity]}
-                offers={sortedOffers}
-                selectedOfferId={activeOfferId ?? undefined}
-              />
+              <div className="cities__right-section">
+                <Map
+                  className="cities__map map"
+                  city={cityLocations[activeCity]}
+                  offers={sortedOffers}
+                  selectedOfferId={activeOfferId ?? undefined}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <MainEmpty cityName={activeCity} />
+        )}
       </main>
     </div>
   );

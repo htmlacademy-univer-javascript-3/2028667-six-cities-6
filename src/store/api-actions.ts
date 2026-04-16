@@ -11,6 +11,7 @@ import {
   setOfferLoading,
   setOffersLoading,
   setReviewSubmitting,
+  updateFavoriteOffer,
 } from './action';
 import type { Actions } from './action';
 import { saveToken } from '../services/token';
@@ -74,4 +75,10 @@ export const postReviewAction = (offerId: string, reviewData: NewReview): ThunkA
   } finally {
     dispatch(setReviewSubmitting(false));
   }
+};
+
+export const updateFavoriteStatusAction = (offerId: string, isFavorite: boolean): ThunkActionResult => async (dispatch, _getState, api) => {
+  const favoriteStatus = Number(!isFavorite);
+  const { data } = await api.post<ServerOffer>(`/favorite/${offerId}/${favoriteStatus}`);
+  dispatch(updateFavoriteOffer(adaptServerOfferToClientOffer(data)));
 };

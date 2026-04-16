@@ -21,16 +21,16 @@ const initialState: OfferPageState = {
 
 export function offerPageReducer(state: OfferPageState = initialState, action: Actions): OfferPageState {
   switch (action.type) {
-    case Action.ToggleFavorite:
+    case Action.UpdateFavoriteOffer:
       return {
         ...state,
         nearbyOffers: state.nearbyOffers.map((offer) => (
-          offer.id === action.payload
-            ? { ...offer, isFavorite: !offer.isFavorite }
+          offer.id === action.payload.id
+            ? action.payload
             : offer
         )),
-        currentOffer: state.currentOffer?.id === action.payload
-          ? { ...state.currentOffer, isFavorite: !state.currentOffer.isFavorite }
+        currentOffer: state.currentOffer?.id === action.payload.id
+          ? action.payload
           : state.currentOffer,
       };
     case Action.FillNearbyOffers:
