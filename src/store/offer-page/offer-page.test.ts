@@ -18,6 +18,7 @@ describe('offerPageReducer', () => {
       reviews: [],
       isOfferLoading: true,
       isReviewSubmitting: false,
+      reviewError: null,
     });
   });
 
@@ -30,6 +31,7 @@ describe('offerPageReducer', () => {
       reviews: [],
       isOfferLoading: true,
       isReviewSubmitting: false,
+      reviewError: null,
     });
   });
 
@@ -42,6 +44,7 @@ describe('offerPageReducer', () => {
       reviews: [],
       isOfferLoading: true,
       isReviewSubmitting: false,
+      reviewError: null,
     });
   });
 
@@ -54,6 +57,7 @@ describe('offerPageReducer', () => {
       reviews,
       isOfferLoading: true,
       isReviewSubmitting: false,
+      reviewError: null,
     });
   });
 
@@ -67,6 +71,7 @@ describe('offerPageReducer', () => {
       reviews: [makeReview()],
       isOfferLoading: false,
       isReviewSubmitting: false,
+      reviewError: null,
     };
 
     expect(offerPageReducer(initialState, updateFavoriteOffer(updatedCurrentOffer))).toEqual({
@@ -75,6 +80,7 @@ describe('offerPageReducer', () => {
       reviews: initialState.reviews,
       isOfferLoading: false,
       isReviewSubmitting: false,
+      reviewError: null,
     });
   });
 
@@ -87,6 +93,7 @@ describe('offerPageReducer', () => {
       reviews: [],
       isOfferLoading: false,
       isReviewSubmitting: false,
+      reviewError: null,
     };
 
     expect(offerPageReducer(initialState, updateFavoriteOffer(updatedNearbyOffer))).toEqual({
@@ -95,6 +102,7 @@ describe('offerPageReducer', () => {
       reviews: [],
       isOfferLoading: false,
       isReviewSubmitting: false,
+      reviewError: null,
     });
   });
 
@@ -105,6 +113,7 @@ describe('offerPageReducer', () => {
       reviews: [],
       isOfferLoading: true,
       isReviewSubmitting: false,
+      reviewError: null,
     };
 
     expect(offerPageReducer(initialState, setOfferLoading(false))).toEqual({
@@ -120,6 +129,7 @@ describe('offerPageReducer', () => {
       reviews: [],
       isOfferLoading: false,
       isReviewSubmitting: false,
+      reviewError: null,
     };
 
     expect(offerPageReducer(initialState, setReviewSubmitting(true))).toEqual({

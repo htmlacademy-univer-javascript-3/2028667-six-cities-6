@@ -9,12 +9,13 @@ import OfferPage from '../../pages/offer-page/offer-page';
 import { setOffersLoading } from '../../store/action';
 import { checkAuthAction, fetchOffersAction } from '../../store/api-actions';
 import type { AppDispatch } from '../../store';
-import { selectIsOffersLoading } from '../../store/selectors';
+import { selectError, selectIsOffersLoading } from '../../store/selectors';
 import PrivateRoute from '../private-route/private-route';
 import Spinner from '../spinner/spinner';
 
 function App(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
+  const error = useSelector(selectError);
   const isOffersLoading = useSelector(selectIsOffersLoading);
 
   useEffect(() => {
@@ -32,26 +33,33 @@ function App(): JSX.Element {
     };
   }, [dispatch]);
 
-  if (isOffersLoading) {
-    return <Spinner />;
-  }
-
   return (
-    <Routes>
-      <Route path="/" element={<MainPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/404" element={<NotFoundPage />} />
-      <Route
-        path="/favorites"
-        element={(
-          <PrivateRoute>
-            <FavoritesPage />
-          </PrivateRoute>
-        )}
-      />
-      <Route path="/offer/:id" element={<OfferPage />} />
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    <>
+      {error && (
+        <div style={{ padding: '12px', backgroundColor: '#fff3cd', color: '#664d03', textAlign: 'center' }}>
+          {error}
+        </div>
+      )}
+      {isOffersLoading ? (
+        <Spinner />
+      ) : (
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/404" element={<NotFoundPage />} />
+          <Route
+            path="/favorites"
+            element={(
+              <PrivateRoute>
+                <FavoritesPage />
+              </PrivateRoute>
+            )}
+          />
+          <Route path="/offer/:id" element={<OfferPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      )}
+    </>
   );
 }
 

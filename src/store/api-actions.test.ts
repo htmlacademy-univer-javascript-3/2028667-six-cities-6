@@ -1,16 +1,20 @@
 import MockAdapter from 'axios-mock-adapter';
-import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAPI } from '../api';
 import { AuthorizationStatus } from '../const';
 import {
   fillCurrentOffer,
+  fillFavoriteOffers,
   fillNearbyOffers,
   fillOffers,
   fillReviews,
   requireAuthorization,
+  setError,
   setOfferLoading,
   setOffersLoading,
+  setReviewError,
   setReviewSubmitting,
+  setUserInfo,
   updateFavoriteOffer,
 } from './action';
 import {
@@ -32,9 +36,23 @@ describe('async actions', () => {
   let mockApi: MockAdapter;
   let dispatch: ReturnType<typeof vi.fn>;
 
+  const getDispatchedActions = (): unknown[] => {
+    const calls = dispatch.mock.calls as Array<[unknown]>;
+
+    return calls
+      .map(([action]) => action)
+      .filter((action) => typeof action !== 'function');
+  };
+
   beforeEach(() => {
     mockApi = new MockAdapter(api);
-    dispatch = vi.fn();
+    dispatch = vi.fn((action: unknown): unknown => {
+      if (typeof action === 'function') {
+        return action(dispatch, () => initialState, api);
+      }
+
+      return action;
+    });
   });
 
   afterEach(() => {
@@ -42,25 +60,61 @@ describe('async actions', () => {
   });
 
   it('fetchOffersAction dispatches offers loading lifecycle', async () => {
-    const serverOffers = [makeServerOffer(), makeServerOffer({ id: '2', city: { name: 'Amsterdam', location: { latitude: 52.37454, longitude: 4.897976, zoom: 12 } } })];
+    const serverOffers = [
+      makeServerOffer(),
+      makeServerOffer({
+        id: '2',
+        city: {
+          name: 'Amsterdam',
+          location: { latitude: 52.37454, longitude: 4.897976, zoom: 12 },
+        },
+      }),
+    ];
     mockApi.onGet('/offers').reply(200, serverOffers);
 
     await fetchOffersAction()(dispatch, () => initialState, api);
 
-    expect(dispatch.mock.calls.flat()).toEqual([
+    expect(getDispatchedActions()).toEqual([
       setOffersLoading(true),
       fillOffers(serverOffers.map(adaptServerOfferToClientOffer)),
+      setError(null),
       setOffersLoading(false),
     ]);
   });
 
   it('checkAuthAction dispatches authorized status on success', async () => {
-    mockApi.onGet('/login').reply(200);
+    const authInfo = {
+      id: 1,
+      email: 'test@mail.com',
+      name: 'User',
+      avatarUrl: 'img/avatar.jpg',
+      isPro: false,
+      token: 'token',
+    };
+    const serverFavoriteOffers = [makeServerOffer({ isFavorite: true })];
+    mockApi.onGet('/login').reply(200, authInfo);
+    mockApi.onGet('/favorite').reply(200, serverFavoriteOffers);
 
     await checkAuthAction()(dispatch, () => initialState, api);
 
-    expect(dispatch.mock.calls.flat()).toEqual([
+    expect(getDispatchedActions()).toEqual([
       requireAuthorization(AuthorizationStatus.Auth),
+      setUserInfo(authInfo),
+      setError(null),
+      fillFavoriteOffers(serverFavoriteOffers.map(adaptServerOfferToClientOffer)),
+      setError(null),
+    ]);
+  });
+
+  it('checkAuthAction dispatches unauthorized status on failure', async () => {
+    mockApi.onGet('/login').reply(401);
+
+    await checkAuthAction()(dispatch, () => initialState, api);
+
+    expect(getDispatchedActions()).toEqual([
+      requireAuthorization(AuthorizationStatus.NoAuth),
+      setUserInfo(null),
+      fillFavoriteOffers([]),
     ]);
   });
 
@@ -76,11 +130,12 @@ describe('async actions', () => {
 
     await fetchOfferPageDataAction(offerId)(dispatch, () => initialState, api);
 
-    expect(dispatch.mock.calls.flat()).toEqual([
+    expect(getDispatchedActions()).toEqual([
       setOfferLoading(true),
       fillCurrentOffer(adaptServerOfferToClientOffer(serverOffer)),
       fillNearbyOffers(serverNearbyOffers.map(adaptServerOfferToClientOffer)),
       fillReviews(serverReviews.map(adaptServerReviewToClientReview)),
+      setError(null),
       setOfferLoading(false),
     ]);
   });
@@ -93,11 +148,12 @@ describe('async actions', () => {
 
     await fetchOfferPageDataAction(offerId)(dispatch, () => initialState, api);
 
-    expect(dispatch.mock.calls.flat()).toEqual([
+    expect(getDispatchedActions()).toEqual([
       setOfferLoading(true),
       fillCurrentOffer(null),
       fillNearbyOffers([]),
       fillReviews([]),
+      setError('Server is unavailable. Please try again later.'),
       setOfferLoading(false),
     ]);
   });
@@ -113,9 +169,11 @@ describe('async actions', () => {
 
     await postReviewAction(offerId, reviewData)(dispatch, () => initialState, api);
 
-    expect(dispatch.mock.calls.flat()).toEqual([
+    expect(getDispatchedActions()).toEqual([
       setReviewSubmitting(true),
+      setReviewError(null),
       fillReviews(serverReviews.map(adaptServerReviewToClientReview)),
+      setError(null),
       setReviewSubmitting(false),
     ]);
   });
@@ -128,10 +186,12 @@ describe('async actions', () => {
     };
     mockApi.onPost(`/comments/${offerId}`).reply(400);
 
-    await expect(postReviewAction(offerId, reviewData)(dispatch, () => initialState, api)).rejects.toThrow();
+    await postReviewAction(offerId, reviewData)(dispatch, () => initialState, api);
 
-    expect(dispatch.mock.calls.flat()).toEqual([
+    expect(getDispatchedActions()).toEqual([
       setReviewSubmitting(true),
+      setReviewError(null),
+      setReviewError('Could not send your review. Please try again.'),
       setReviewSubmitting(false),
     ]);
   });
@@ -143,8 +203,9 @@ describe('async actions', () => {
 
     await updateFavoriteStatusAction(offerId, false)(dispatch, () => initialState, api);
 
-    expect(dispatch.mock.calls.flat()).toEqual([
+    expect(getDispatchedActions()).toEqual([
       updateFavoriteOffer(adaptServerOfferToClientOffer(serverOffer)),
+      setError(null),
     ]);
   });
 });

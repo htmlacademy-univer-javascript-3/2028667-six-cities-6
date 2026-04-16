@@ -8,34 +8,40 @@ import type { RootState } from './store';
 
 const defaultState = reducer(undefined, { type: 'UNKNOWN_ACTION' } as never);
 
+type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
+};
+
 type ExtendedRenderOptions = {
-  preloadedState?: Partial<RootState>;
+  preloadedState?: DeepPartial<RootState>;
   route?: string;
 };
 
-export function makeStore(preloadedState?: Partial<RootState>) {
+export function makeStore(preloadedState?: DeepPartial<RootState>) {
+  const mergedState = {
+    ...defaultState,
+    ...preloadedState,
+    app: {
+      ...defaultState.app,
+      ...preloadedState?.app,
+    },
+    user: {
+      ...defaultState.user,
+      ...preloadedState?.user,
+    },
+    catalog: {
+      ...defaultState.catalog,
+      ...preloadedState?.catalog,
+    },
+    offerPage: {
+      ...defaultState.offerPage,
+      ...preloadedState?.offerPage,
+    },
+  } as RootState;
+
   return configureStore({
     reducer,
-    preloadedState: {
-      ...defaultState,
-      ...preloadedState,
-      app: {
-        ...defaultState.app,
-        ...preloadedState?.app,
-      },
-      user: {
-        ...defaultState.user,
-        ...preloadedState?.user,
-      },
-      catalog: {
-        ...defaultState.catalog,
-        ...preloadedState?.catalog,
-      },
-      offerPage: {
-        ...defaultState.offerPage,
-        ...preloadedState?.offerPage,
-      },
-    },
+    preloadedState: mergedState,
   });
 }
 

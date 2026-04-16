@@ -8,10 +8,10 @@ import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import SortingOptions from '../../components/sorting-options/sorting-options';
 import type { SortingOption } from '../../components/sorting-options/const';
-import { changeCity, requireAuthorization } from '../../store/action';
+import { changeCity } from '../../store/action';
 import type { AppDispatch } from '../../store';
-import { updateFavoriteStatusAction } from '../../store/api-actions';
-import { selectActiveCity, selectAuthorizationStatus, selectFavoriteOffersCount, selectOffersByActiveCity } from '../../store/selectors';
+import { logoutAction, updateFavoriteStatusAction } from '../../store/api-actions';
+import { selectActiveCity, selectAuthorizationStatus, selectFavoriteOffersCount, selectOffersByActiveCity, selectUserInfo } from '../../store/selectors';
 import type { CityName } from '../../types/offer';
 
 function MainPage(): JSX.Element {
@@ -21,6 +21,7 @@ function MainPage(): JSX.Element {
   const cityOffers = useSelector(selectOffersByActiveCity);
   const favoriteOffersCount = useSelector(selectFavoriteOffersCount);
   const authorizationStatus = useSelector(selectAuthorizationStatus);
+  const userInfo = useSelector(selectUserInfo);
   const [activeSorting, setActiveSorting] = useState<SortingOption>('Popular');
   const [isSortingOpen, setIsSortingOpen] = useState(false);
   const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
@@ -74,8 +75,8 @@ function MainPage(): JSX.Element {
     void dispatch(updateFavoriteStatusAction(offerId, offer.isFavorite));
   }, [authorizationStatus, dispatch, navigate, sortedOffers]);
 
-  const handleSignOut = useCallback(() => {
-    dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+  const handleLogout = useCallback(() => {
+    void dispatch(logoutAction());
   }, [dispatch]);
 
   const hasOffers = cityOffers.length > 0;
@@ -86,7 +87,7 @@ function MainPage(): JSX.Element {
         <div className="container">
           <div className="header__wrapper">
             <div className="header__left">
-              <a className="header__logo-link header__logo-link--active" href="/" onClick={(event) => event.preventDefault()}>
+              <Link className="header__logo-link header__logo-link--active" to="/">
                 <img
                   className="header__logo"
                   src="img/logo.svg"
@@ -94,7 +95,7 @@ function MainPage(): JSX.Element {
                   width={81}
                   height={41}
                 />
-              </a>
+              </Link>
             </div>
 
             <nav className="header__nav">
@@ -104,7 +105,7 @@ function MainPage(): JSX.Element {
                     <li className="header__nav-item user">
                       <Link className="header__nav-link header__nav-link--profile" to="/favorites">
                         <div className="header__avatar-wrapper user__avatar-wrapper"></div>
-                        <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
+                        <span className="header__user-name user__name">{userInfo?.email}</span>
                         <span className="header__favorite-count">
                           {favoriteOffersCount}
                         </span>
@@ -112,8 +113,8 @@ function MainPage(): JSX.Element {
                     </li>
 
                     <li className="header__nav-item">
-                      <Link className="header__nav-link" to="/login" onClick={handleSignOut}>
-                        <span className="header__signout">Sign out</span>
+                      <Link className="header__nav-link" to="/" onClick={handleLogout}>
+                        <span className="header__signout">Log out</span>
                       </Link>
                     </li>
                   </>

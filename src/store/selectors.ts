@@ -3,18 +3,18 @@ import type { RootState } from '.';
 import type { CityName, Offer } from '../types/offer';
 
 export const selectActiveCity = (state: RootState) => state.app.city;
+export const selectError = (state: RootState) => state.app.error;
 export const selectOffers = (state: RootState) => state.catalog.offers;
+export const selectFavoriteOffers = (state: RootState) => state.catalog.favoriteOffers;
 export const selectNearbyOffers = (state: RootState) => state.offerPage.nearbyOffers;
 export const selectCurrentOffer = (state: RootState) => state.offerPage.currentOffer;
 export const selectReviews = (state: RootState) => state.offerPage.reviews;
 export const selectAuthorizationStatus = (state: RootState) => state.user.authorizationStatus;
+export const selectUserInfo = (state: RootState) => state.user.userInfo;
 export const selectIsOffersLoading = (state: RootState) => state.catalog.isOffersLoading;
 export const selectIsOfferLoading = (state: RootState) => state.offerPage.isOfferLoading;
 export const selectIsReviewSubmitting = (state: RootState) => state.offerPage.isReviewSubmitting;
-
-export const selectFavoriteOffers = createSelector([selectOffers], (offers) =>
-  offers.filter((offer) => offer.isFavorite)
-);
+export const selectReviewError = (state: RootState) => state.offerPage.reviewError;
 
 export const selectFavoriteOffersCount = createSelector([selectFavoriteOffers], (favoriteOffers) =>
   favoriteOffers.length

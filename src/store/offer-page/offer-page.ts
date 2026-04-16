@@ -9,6 +9,7 @@ export type OfferPageState = {
   reviews: Review[];
   isOfferLoading: boolean;
   isReviewSubmitting: boolean;
+  reviewError: string | null;
 };
 
 const initialState: OfferPageState = {
@@ -17,6 +18,7 @@ const initialState: OfferPageState = {
   reviews: [],
   isOfferLoading: true,
   isReviewSubmitting: false,
+  reviewError: null,
 };
 
 export function offerPageReducer(state: OfferPageState = initialState, action: Actions): OfferPageState {
@@ -57,6 +59,11 @@ export function offerPageReducer(state: OfferPageState = initialState, action: A
       return {
         ...state,
         isReviewSubmitting: action.payload,
+      };
+    case Action.SetReviewError:
+      return {
+        ...state,
+        reviewError: action.payload,
       };
     default:
       return state;

@@ -1,14 +1,23 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import type { AppDispatch } from '../../store';
-import { updateFavoriteStatusAction } from '../../store/api-actions';
-import { selectFavoriteOffersCount, selectGroupedFavoriteOffers } from '../../store/selectors';
+import FavoritesEmptyPage from '../favorites-empty-page/favorites-empty-page';
+import { changeCity } from '../../store/action';
+import { fetchFavoriteOffersAction, logoutAction, updateFavoriteStatusAction } from '../../store/api-actions';
+import { selectFavoriteOffersCount, selectGroupedFavoriteOffers, selectUserInfo } from '../../store/selectors';
+import { getOfferTypeLabel } from '../../utils/offer';
+import type { CityName } from '../../types/offer';
 
 function FavoritesPage(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const favoriteOffersCount = useSelector(selectFavoriteOffersCount);
   const groupedOffers = useSelector(selectGroupedFavoriteOffers);
+  const userInfo = useSelector(selectUserInfo);
+
+  useEffect(() => {
+    void dispatch(fetchFavoriteOffersAction());
+  }, [dispatch]);
 
   const handleFavoriteToggle = useCallback((offerId: string) => {
     const offer = Object.values(groupedOffers)
@@ -21,6 +30,18 @@ function FavoritesPage(): JSX.Element {
 
     void dispatch(updateFavoriteStatusAction(offerId, offer.isFavorite));
   }, [dispatch, groupedOffers]);
+
+  const handleLogout = useCallback(() => {
+    void dispatch(logoutAction());
+  }, [dispatch]);
+
+  const handleCityClick = useCallback((city: CityName) => {
+    dispatch(changeCity(city));
+  }, [dispatch]);
+
+  if (favoriteOffersCount === 0) {
+    return <FavoritesEmptyPage />;
+  }
 
   return (
     <div className="page">
@@ -37,13 +58,13 @@ function FavoritesPage(): JSX.Element {
                 <li className="header__nav-item user">
                   <Link className="header__nav-link header__nav-link--profile" to="/favorites">
                     <div className="header__avatar-wrapper user__avatar-wrapper"></div>
-                    <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
+                    <span className="header__user-name user__name">{userInfo?.email}</span>
                     <span className="header__favorite-count">{favoriteOffersCount}</span>
                   </Link>
                 </li>
                 <li className="header__nav-item">
-                  <Link className="header__nav-link" to="/login">
-                    <span className="header__signout">Sign out</span>
+                  <Link className="header__nav-link" to="/" onClick={handleLogout}>
+                    <span className="header__signout">Log out</span>
                   </Link>
                 </li>
               </ul>
@@ -60,7 +81,7 @@ function FavoritesPage(): JSX.Element {
                 <li className="favorites__locations-items" key={city}>
                   <div className="favorites__locations locations locations--current">
                     <div className="locations__item">
-                      <Link className="locations__item-link" to="/">
+                      <Link className="locations__item-link" to="/" onClick={() => handleCityClick(city as CityName)}>
                         <span>{city}</span>
                       </Link>
                     </div>
@@ -108,7 +129,7 @@ function FavoritesPage(): JSX.Element {
                             <h2 className="place-card__name">
                               <Link to={`/offer/${offer.id}`}>{offer.title}</Link>
                             </h2>
-                            <p className="place-card__type">{offer.type}</p>
+                            <p className="place-card__type">{getOfferTypeLabel(offer.type)}</p>
                           </div>
                         </article>
                       );
