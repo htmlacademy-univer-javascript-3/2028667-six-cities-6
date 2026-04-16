@@ -4,18 +4,26 @@ import { AuthorizationStatus } from '../const';
 import { requireAuthorization } from './action';
 import { reducer } from './reducer';
 
-export const api = createAPI(() => {
-  store.dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+let handleUnauthorized: (() => void) | null = null;
+
+const apiInstance = createAPI(() => {
+  handleUnauthorized?.();
 });
 
-export const store = configureStore({
+const appStore = configureStore({
   reducer,
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({
     thunk: {
-      extraArgument: api,
+      extraArgument: apiInstance,
     },
   }),
 });
+
+export const api = apiInstance;
+export const store = appStore;
+handleUnauthorized = () => {
+  store.dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+};
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

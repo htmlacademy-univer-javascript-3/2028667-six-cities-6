@@ -1,7 +1,8 @@
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { postReviewAction } from '../../store/api-actions';
-import type { AppDispatch, RootState } from '../../store';
+import type { AppDispatch } from '../../store';
+import { selectIsReviewSubmitting } from '../../store/selectors';
 
 const ratingOptions = [
   { value: 5, title: 'perfect' },
@@ -17,7 +18,7 @@ type ReviewFormProps = {
 
 function ReviewForm({ offerId }: ReviewFormProps): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
-  const isReviewSubmitting = useSelector((state: RootState) => state.isReviewSubmitting);
+  const isReviewSubmitting = useSelector(selectIsReviewSubmitting);
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState('');
 
@@ -29,16 +30,17 @@ function ReviewForm({ offerId }: ReviewFormProps): JSX.Element {
     setComment(event.target.value);
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (rating === null) {
       return;
     }
 
-    await dispatch(postReviewAction(offerId, { comment, rating }));
-    setRating(null);
-    setComment('');
+    void dispatch(postReviewAction(offerId, { comment, rating })).then(() => {
+      setRating(null);
+      setComment('');
+    });
   };
 
   const isSubmitDisabled = rating === null || comment.trim().length < 50 || isReviewSubmitting;

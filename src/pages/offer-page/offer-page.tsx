@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { AuthorizationStatus } from '../../const';
@@ -6,29 +6,41 @@ import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import ReviewForm from '../../components/review-form/review-form';
 import ReviewsList from '../../components/reviews-list/reviews-list';
-import type { AppDispatch, RootState } from '../../store';
+import type { AppDispatch } from '../../store';
 import { fetchOfferPageDataAction } from '../../store/api-actions';
 import Spinner from '../../components/spinner/spinner';
+import { toggleFavorite } from '../../store/action';
+import {
+  selectAuthorizationStatus,
+  selectCurrentOffer,
+  selectFavoriteOffersCount,
+  selectIsOfferLoading,
+  selectNearbyOffers,
+  selectReviews,
+} from '../../store/selectors';
 
-type OfferPageProps = {
-  onToggleFavorite: (offerId: string) => void;
-};
-
-function OfferPage({ onToggleFavorite }: OfferPageProps): JSX.Element {
+function OfferPage(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const { id } = useParams();
-  const offer = useSelector((state: RootState) => state.currentOffer);
-  const nearbyOffers = useSelector((state: RootState) => state.nearbyOffers);
-  const reviews = useSelector((state: RootState) => state.reviews);
-  const offers = useSelector((state: RootState) => state.offers);
-  const isOfferLoading = useSelector((state: RootState) => state.isOfferLoading);
-  const authorizationStatus = useSelector((state: RootState) => state.authorizationStatus);
+  const offer = useSelector(selectCurrentOffer);
+  const nearbyOffers = useSelector(selectNearbyOffers);
+  const reviews = useSelector(selectReviews);
+  const favoriteOffersCount = useSelector(selectFavoriteOffersCount);
+  const isOfferLoading = useSelector(selectIsOfferLoading);
+  const authorizationStatus = useSelector(selectAuthorizationStatus);
 
   useEffect(() => {
     if (id) {
       dispatch(fetchOfferPageDataAction(id));
     }
   }, [dispatch, id]);
+
+  const ratingWidth = offer ? `${Math.round(offer.rating) * 20}%` : '0%';
+  const offerMapItems = useMemo(() => (offer ? [offer, ...nearbyOffers] : nearbyOffers), [offer, nearbyOffers]);
+
+  const handleFavoriteToggle = useCallback((offerId: string) => {
+    dispatch(toggleFavorite(offerId));
+  }, [dispatch]);
 
   if (isOfferLoading) {
     return <Spinner />;
@@ -37,7 +49,6 @@ function OfferPage({ onToggleFavorite }: OfferPageProps): JSX.Element {
   if (!offer) {
     return <Navigate to="/404" replace />;
   }
-  const ratingWidth = `${Math.round(offer.rating) * 20}%`;
 
   return (
     <div className="page">
@@ -55,7 +66,7 @@ function OfferPage({ onToggleFavorite }: OfferPageProps): JSX.Element {
                   <Link className="header__nav-link header__nav-link--profile" to="/favorites">
                     <div className="header__avatar-wrapper user__avatar-wrapper"></div>
                     <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
-                    <span className="header__favorite-count">{offers.filter((item) => item.isFavorite).length}</span>
+                    <span className="header__favorite-count">{favoriteOffersCount}</span>
                   </Link>
                 </li>
                 <li className="header__nav-item">
@@ -91,7 +102,7 @@ function OfferPage({ onToggleFavorite }: OfferPageProps): JSX.Element {
                 <button
                   className={`offer__bookmark-button button ${offer.isFavorite ? 'offer__bookmark-button--active' : ''}`}
                   type="button"
-                  onClick={() => onToggleFavorite(offer.id)}
+                  onClick={() => handleFavoriteToggle(offer.id)}
                   aria-pressed={offer.isFavorite}
                 >
                   <svg className="offer__bookmark-icon" width={31} height={33}>
@@ -148,7 +159,7 @@ function OfferPage({ onToggleFavorite }: OfferPageProps): JSX.Element {
           <Map
             className="offer__map"
             city={offer.location}
-            offers={[offer, ...nearbyOffers]}
+            offers={offerMapItems}
             selectedOfferId={offer.id}
           />
         </section>
@@ -160,7 +171,7 @@ function OfferPage({ onToggleFavorite }: OfferPageProps): JSX.Element {
               className="near-places__list places__list"
               cardClassName="near-places__card"
               imageWrapperClassName="near-places__image-wrapper"
-              onToggleFavorite={onToggleFavorite}
+              onToggleFavorite={handleFavoriteToggle}
             />
           </section>
         </div>

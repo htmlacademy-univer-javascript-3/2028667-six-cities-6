@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AuthorizationStatus, cityLocations } from '../../const';
@@ -6,57 +6,63 @@ import CitiesList from '../../components/cities-list/cities-list';
 import Map from '../../components/map/map';
 import OffersList from '../../components/offers-list/offers-list';
 import SortingOptions from '../../components/sorting-options/sorting-options';
-import type { SortingOption } from '../../components/sorting-options/sorting-options';
-import { changeCity, requireAuthorization } from '../../store/action';
-import type { AppDispatch, RootState } from '../../store';
+import type { SortingOption } from '../../components/sorting-options/const';
+import { changeCity, requireAuthorization, toggleFavorite } from '../../store/action';
+import type { AppDispatch } from '../../store';
+import { selectActiveCity, selectAuthorizationStatus, selectFavoriteOffersCount, selectOffersByActiveCity } from '../../store/selectors';
 import type { CityName } from '../../types/offer';
 
-type MainPageProps = {
-  onToggleFavorite: (offerId: string) => void;
-};
-
-function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
+function MainPage(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
-  const activeCity = useSelector((state: RootState) => state.city);
-  const allOffers = useSelector((state: RootState) => state.offers);
-  const authorizationStatus = useSelector((state: RootState) => state.authorizationStatus);
+  const activeCity = useSelector(selectActiveCity);
+  const cityOffers = useSelector(selectOffersByActiveCity);
+  const favoriteOffersCount = useSelector(selectFavoriteOffersCount);
+  const authorizationStatus = useSelector(selectAuthorizationStatus);
   const [activeSorting, setActiveSorting] = useState<SortingOption>('Popular');
   const [isSortingOpen, setIsSortingOpen] = useState(false);
   const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
 
-  const cityOffers = allOffers.filter((offer) => offer.city === activeCity);
+  const sortedOffers = useMemo(() => {
+    const offersToSort = [...cityOffers];
 
-  const sortedOffers = [...cityOffers].sort((firstOffer, secondOffer) => {
     switch (activeSorting) {
       case 'Price: low to high':
-        return firstOffer.price - secondOffer.price;
+        return offersToSort.sort((firstOffer, secondOffer) => firstOffer.price - secondOffer.price);
       case 'Price: high to low':
-        return secondOffer.price - firstOffer.price;
+        return offersToSort.sort((firstOffer, secondOffer) => secondOffer.price - firstOffer.price);
       case 'Top rated first':
-        return secondOffer.rating - firstOffer.rating;
+        return offersToSort.sort((firstOffer, secondOffer) => secondOffer.rating - firstOffer.rating);
       case 'Popular':
       default:
-        return 0;
+        return offersToSort;
     }
-  });
+  }, [cityOffers, activeSorting]);
 
-  const handleCityClick = (city: CityName) => {
+  const handleCityClick = useCallback((city: CityName) => {
     dispatch(changeCity(city));
     setIsSortingOpen(false);
-  };
+  }, [dispatch]);
 
-  const handleSortingChange = (sortingOption: SortingOption) => {
+  const handleSortingChange = useCallback((sortingOption: SortingOption) => {
     setActiveSorting(sortingOption);
     setIsSortingOpen(false);
-  };
+  }, []);
 
-  const handleOfferHover = (offerId: string | null) => {
+  const handleOfferHover = useCallback((offerId: string | null) => {
     setActiveOfferId(offerId);
-  };
+  }, []);
 
-  const handleSignOut = () => {
+  const handleSortingToggle = useCallback(() => {
+    setIsSortingOpen((currentState) => !currentState);
+  }, []);
+
+  const handleFavoriteToggle = useCallback((offerId: string) => {
+    dispatch(toggleFavorite(offerId));
+  }, [dispatch]);
+
+  const handleSignOut = useCallback(() => {
     dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
-  };
+  }, [dispatch]);
 
   return (
     <div className="page page--gray page--main">
@@ -84,7 +90,7 @@ function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
                         <div className="header__avatar-wrapper user__avatar-wrapper"></div>
                         <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
                         <span className="header__favorite-count">
-                          {allOffers.filter((offer) => offer.isFavorite).length}
+                          {favoriteOffersCount}
                         </span>
                       </Link>
                     </li>
@@ -124,19 +130,19 @@ function MainPage({ onToggleFavorite }: MainPageProps): JSX.Element {
               <b className="places__found">
                 {cityOffers.length > 0
                   ? `${cityOffers.length} places to stay in ${activeCity}`
-                  : `${allOffers.length} places available soon in ${activeCity}`}
+                  : `0 places available soon in ${activeCity}`}
               </b>
 
               <SortingOptions
                 activeSorting={activeSorting}
                 isOpen={isSortingOpen}
-                onSortingToggle={() => setIsSortingOpen((currentState) => !currentState)}
+                onSortingToggle={handleSortingToggle}
                 onSortingChange={handleSortingChange}
               />
 
               <OffersList
                 offers={sortedOffers}
-                onToggleFavorite={onToggleFavorite}
+                onToggleFavorite={handleFavoriteToggle}
                 onOfferHover={handleOfferHover}
               />
             </section>

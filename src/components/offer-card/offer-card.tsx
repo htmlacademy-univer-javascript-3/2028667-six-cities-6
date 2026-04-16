@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import type { Offer } from '../../types/offer';
 
@@ -28,12 +29,23 @@ function OfferCard({
   } = offer;
 
   const ratingWidth = `${Math.round(rating) * 20}%`;
+  const handleMouseEnter = useCallback(() => {
+    onOfferHover?.(id);
+  }, [id, onOfferHover]);
+
+  const handleMouseLeave = useCallback(() => {
+    onOfferHover?.(null);
+  }, [onOfferHover]);
+
+  const handleFavoriteClick = useCallback(() => {
+    onToggleFavorite?.(id);
+  }, [id, onToggleFavorite]);
 
   return (
     <article
       className={`${cardClassName} place-card`}
-      onMouseEnter={() => onOfferHover?.(id)}
-      onMouseLeave={() => onOfferHover?.(null)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {isPremium && (
         <div className="place-card__mark">
@@ -63,7 +75,7 @@ function OfferCard({
           <button
             className={`place-card__bookmark-button button ${isFavorite ? 'place-card__bookmark-button--active' : ''}`}
             type="button"
-            onClick={() => onToggleFavorite?.(id)}
+            onClick={handleFavoriteClick}
             aria-pressed={isFavorite}
           >
             <svg className="place-card__bookmark-icon" width={18} height={19}>
@@ -92,4 +104,6 @@ function OfferCard({
   );
 }
 
-export default OfferCard;
+const MemoizedOfferCard = memo(OfferCard);
+
+export default MemoizedOfferCard;
