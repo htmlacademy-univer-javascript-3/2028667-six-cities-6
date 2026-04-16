@@ -1,6 +1,7 @@
 import { memo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import type { Offer } from '../../types/offer';
+import { getOfferTypeLabel } from '../../utils/offer';
 
 type OfferCardProps = {
   offer: Offer;
@@ -98,7 +99,7 @@ function OfferCard({
           <Link to={`/offer/${id}`}>{title}</Link>
         </h2>
 
-        <p className="place-card__type">{type}</p>
+        <p className="place-card__type">{getOfferTypeLabel(type)}</p>
       </div>
     </article>
   );

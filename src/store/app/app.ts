@@ -4,10 +4,12 @@ import type { CityName } from '../../types/offer';
 
 export type AppState = {
   city: CityName;
+  error: string | null;
 };
 
 const initialState: AppState = {
   city: 'Paris',
+  error: null,
 };
 
 export function appReducer(state: AppState = initialState, action: Actions): AppState {
@@ -16,6 +18,11 @@ export function appReducer(state: AppState = initialState, action: Actions): App
       return {
         ...state,
         city: action.payload,
+      };
+    case Action.SetError:
+      return {
+        ...state,
+        error: action.payload,
       };
     default:
       return state;

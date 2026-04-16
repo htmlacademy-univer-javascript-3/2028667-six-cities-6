@@ -6,12 +6,15 @@ describe('root reducer', () => {
     expect(reducer(undefined, { type: 'UNKNOWN_ACTION' } as never)).toEqual({
       app: {
         city: 'Paris',
+        error: null,
       },
       user: {
         authorizationStatus: 'UNKNOWN',
+        userInfo: null,
       },
       catalog: {
         offers: [],
+        favoriteOffers: [],
         isOffersLoading: true,
       },
       offerPage: {
@@ -20,6 +23,7 @@ describe('root reducer', () => {
         reviews: [],
         isOfferLoading: true,
         isReviewSubmitting: false,
+        reviewError: null,
       },
     });
   });

@@ -7,16 +7,19 @@ describe('userReducer', () => {
   it('returns initial state for unknown action', () => {
     expect(userReducer(undefined, { type: 'UNKNOWN_ACTION' } as never)).toEqual({
       authorizationStatus: AuthorizationStatus.Unknown,
+      userInfo: null,
     });
   });
 
   it('updates authorization status', () => {
     const initialState = {
       authorizationStatus: AuthorizationStatus.Unknown,
+      userInfo: null,
     };
 
     expect(userReducer(initialState, requireAuthorization(AuthorizationStatus.Auth))).toEqual({
       authorizationStatus: AuthorizationStatus.Auth,
+      userInfo: null,
     });
   });
 });

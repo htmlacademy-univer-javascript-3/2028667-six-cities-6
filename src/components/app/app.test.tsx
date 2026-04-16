@@ -46,12 +46,15 @@ function makeStore(
     preloadedState: {
       app: {
         city: 'Paris',
+        error: null,
       },
       user: {
         authorizationStatus,
+        userInfo: null,
       },
       catalog: {
         offers: [],
+        favoriteOffers: [],
         isOffersLoading,
       },
       offerPage: {
@@ -60,6 +63,7 @@ function makeStore(
         reviews: [],
         isOfferLoading: false,
         isReviewSubmitting: false,
+        reviewError: null,
       },
     },
   });

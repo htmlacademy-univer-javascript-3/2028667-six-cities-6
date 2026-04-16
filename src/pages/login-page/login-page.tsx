@@ -1,10 +1,11 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { AuthorizationStatus } from '../../const';
+import { AuthorizationStatus, cities } from '../../const';
 import { loginAction } from '../../store/api-actions';
 import type { AppDispatch } from '../../store';
 import { selectAuthorizationStatus } from '../../store/selectors';
+import { changeCity } from '../../store/action';
 
 function LoginPage(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
@@ -12,6 +13,10 @@ function LoginPage(): JSX.Element {
   const authorizationStatus = useSelector(selectAuthorizationStatus);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const randomCity = useMemo(
+    () => cities[Math.floor(Math.random() * cities.length)],
+    []
+  );
 
   if (authorizationStatus === AuthorizationStatus.Auth) {
     return <Navigate to="/" />;
@@ -35,6 +40,16 @@ function LoginPage(): JSX.Element {
                 <img className="header__logo" src="img/logo.svg" alt="6 cities logo" width={81} height={41} />
               </Link>
             </div>
+            <nav className="header__nav">
+              <ul className="header__nav-list">
+                <li className="header__nav-item user">
+                  <Link className="header__nav-link header__nav-link--profile" to="/login">
+                    <div className="header__avatar-wrapper user__avatar-wrapper"></div>
+                    <span className="header__login">Sign in</span>
+                  </Link>
+                </li>
+              </ul>
+            </nav>
           </div>
         </div>
       </header>
@@ -64,8 +79,8 @@ function LoginPage(): JSX.Element {
                   placeholder="Password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  pattern=".*\S.*"
-                  title="Password must contain at least one non-space character"
+                  pattern="^(?=.*[A-Za-z])(?=.*\\d).+$"
+                  title="Password must contain at least one letter and one number"
                   required
                 />
               </div>
@@ -74,8 +89,12 @@ function LoginPage(): JSX.Element {
           </section>
           <section className="locations locations--login locations--current">
             <div className="locations__item">
-              <Link className="locations__item-link" to="/">
-                <span>Amsterdam</span>
+              <Link
+                className="locations__item-link"
+                to="/"
+                onClick={() => dispatch(changeCity(randomCity))}
+              >
+                <span>{randomCity}</span>
               </Link>
             </div>
           </section>

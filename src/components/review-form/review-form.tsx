@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { postReviewAction } from '../../store/api-actions';
 import type { AppDispatch } from '../../store';
-import { selectIsReviewSubmitting } from '../../store/selectors';
+import { selectIsReviewSubmitting, selectReviewError } from '../../store/selectors';
 
 const ratingOptions = [
   { value: 5, title: 'perfect' },
@@ -19,6 +19,7 @@ type ReviewFormProps = {
 function ReviewForm({ offerId }: ReviewFormProps): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const isReviewSubmitting = useSelector(selectIsReviewSubmitting);
+  const reviewError = useSelector(selectReviewError);
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState('');
 
@@ -43,7 +44,8 @@ function ReviewForm({ offerId }: ReviewFormProps): JSX.Element {
     });
   };
 
-  const isSubmitDisabled = rating === null || comment.trim().length < 50 || isReviewSubmitting;
+  const trimmedCommentLength = comment.trim().length;
+  const isSubmitDisabled = rating === null || trimmedCommentLength < 50 || trimmedCommentLength > 300 || isReviewSubmitting;
 
   return (
     <form className="reviews__form form" action="#" method="post" onSubmit={handleSubmit}>
@@ -77,8 +79,10 @@ function ReviewForm({ offerId }: ReviewFormProps): JSX.Element {
         value={comment}
         onChange={handleCommentChange}
         disabled={isReviewSubmitting}
+        maxLength={300}
       >
       </textarea>
+      {reviewError && <p className="reviews__error">{reviewError}</p>}
       <div className="reviews__button-wrapper">
         <p className="reviews__help">
           To submit review please make sure to set <span className="reviews__star">rating</span> and describe your

@@ -1,10 +1,13 @@
 import type { CityName, Offer } from '../types/offer';
 import type { AuthorizationStatus } from '../const';
 import type { Review } from '../types/review';
+import type { AuthInfo } from '../types/auth-info';
 
 export const Action = {
   ChangeCity: 'city/change',
+  SetError: 'app/setError',
   FillOffers: 'offers/fill',
+  FillFavoriteOffers: 'offers/fillFavoriteOffers',
   UpdateFavoriteOffer: 'offers/updateFavoriteOffer',
   FillNearbyOffers: 'offers/fillNearby',
   FillCurrentOffer: 'offers/fillCurrent',
@@ -12,7 +15,9 @@ export const Action = {
   SetOffersLoading: 'offers/setLoading',
   SetOfferLoading: 'offer/setLoading',
   SetReviewSubmitting: 'review/setSubmitting',
+  SetReviewError: 'review/setError',
   RequireAuthorization: 'user/requireAuthorization',
+  SetUserInfo: 'user/setUserInfo',
 } as const;
 
 export type ActionType = typeof Action[keyof typeof Action];
@@ -22,8 +27,18 @@ export type ChangeCityAction = {
   payload: CityName;
 };
 
+export type SetErrorAction = {
+  type: typeof Action.SetError;
+  payload: string | null;
+};
+
 export type FillOffersAction = {
   type: typeof Action.FillOffers;
+  payload: Offer[];
+};
+
+export type FillFavoriteOffersAction = {
+  type: typeof Action.FillFavoriteOffers;
   payload: Offer[];
 };
 
@@ -62,14 +77,26 @@ export type SetReviewSubmittingAction = {
   payload: boolean;
 };
 
+export type SetReviewErrorAction = {
+  type: typeof Action.SetReviewError;
+  payload: string | null;
+};
+
 export type RequireAuthorizationAction = {
   type: typeof Action.RequireAuthorization;
   payload: AuthorizationStatus;
 };
 
+export type SetUserInfoAction = {
+  type: typeof Action.SetUserInfo;
+  payload: AuthInfo | null;
+};
+
 export type Actions =
   ChangeCityAction |
+  SetErrorAction |
   FillOffersAction |
+  FillFavoriteOffersAction |
   UpdateFavoriteOfferAction |
   FillNearbyOffersAction |
   FillCurrentOfferAction |
@@ -77,15 +104,27 @@ export type Actions =
   SetOffersLoadingAction |
   SetOfferLoadingAction |
   SetReviewSubmittingAction |
-  RequireAuthorizationAction;
+  SetReviewErrorAction |
+  RequireAuthorizationAction |
+  SetUserInfoAction;
 
 export const changeCity = (city: CityName): ChangeCityAction => ({
   type: Action.ChangeCity,
   payload: city,
 });
 
+export const setError = (error: string | null): SetErrorAction => ({
+  type: Action.SetError,
+  payload: error,
+});
+
 export const fillOffers = (offers: Offer[]): FillOffersAction => ({
   type: Action.FillOffers,
+  payload: offers,
+});
+
+export const fillFavoriteOffers = (offers: Offer[]): FillFavoriteOffersAction => ({
+  type: Action.FillFavoriteOffers,
   payload: offers,
 });
 
@@ -124,7 +163,17 @@ export const setReviewSubmitting = (isSubmitting: boolean): SetReviewSubmittingA
   payload: isSubmitting,
 });
 
+export const setReviewError = (error: string | null): SetReviewErrorAction => ({
+  type: Action.SetReviewError,
+  payload: error,
+});
+
 export const requireAuthorization = (authorizationStatus: AuthorizationStatus): RequireAuthorizationAction => ({
   type: Action.RequireAuthorization,
   payload: authorizationStatus,
+});
+
+export const setUserInfo = (userInfo: AuthInfo | null): SetUserInfoAction => ({
+  type: Action.SetUserInfo,
+  payload: userInfo,
 });

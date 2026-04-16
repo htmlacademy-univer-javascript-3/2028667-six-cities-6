@@ -7,7 +7,7 @@ import OffersList from '../../components/offers-list/offers-list';
 import ReviewForm from '../../components/review-form/review-form';
 import ReviewsList from '../../components/reviews-list/reviews-list';
 import type { AppDispatch } from '../../store';
-import { fetchOfferPageDataAction, updateFavoriteStatusAction } from '../../store/api-actions';
+import { fetchOfferPageDataAction, logoutAction, updateFavoriteStatusAction } from '../../store/api-actions';
 import Spinner from '../../components/spinner/spinner';
 import {
   selectAuthorizationStatus,
@@ -16,7 +16,9 @@ import {
   selectIsOfferLoading,
   selectNearbyOffers,
   selectReviews,
+  selectUserInfo,
 } from '../../store/selectors';
+import { getAdultLabel, getBedroomLabel, getOfferTypeLabel } from '../../utils/offer';
 
 function OfferPage(): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,6 +30,7 @@ function OfferPage(): JSX.Element {
   const favoriteOffersCount = useSelector(selectFavoriteOffersCount);
   const isOfferLoading = useSelector(selectIsOfferLoading);
   const authorizationStatus = useSelector(selectAuthorizationStatus);
+  const userInfo = useSelector(selectUserInfo);
 
   useEffect(() => {
     if (id) {
@@ -36,7 +39,13 @@ function OfferPage(): JSX.Element {
   }, [dispatch, id]);
 
   const ratingWidth = offer ? `${Math.round(offer.rating) * 20}%` : '0%';
-  const offerMapItems = useMemo(() => (offer ? [offer, ...nearbyOffers] : nearbyOffers), [offer, nearbyOffers]);
+  const offerMapItems = useMemo(() => (offer ? [offer, ...nearbyOffers.slice(0, 3)] : nearbyOffers.slice(0, 3)), [offer, nearbyOffers]);
+  const visibleImages = offer?.images.slice(0, 6) ?? [];
+  const sortedReviews = useMemo(
+    () => [...reviews].sort((firstReview, secondReview) => new Date(secondReview.date).getTime() - new Date(firstReview.date).getTime()).slice(0, 10),
+    [reviews]
+  );
+  const visibleNearbyOffers = useMemo(() => nearbyOffers.slice(0, 3), [nearbyOffers]);
 
   const handleFavoriteToggle = useCallback((offerId: string) => {
     if (authorizationStatus !== AuthorizationStatus.Auth) {
@@ -52,6 +61,10 @@ function OfferPage(): JSX.Element {
 
     void dispatch(updateFavoriteStatusAction(offerId, favoriteOffer.isFavorite));
   }, [authorizationStatus, dispatch, navigate, offerMapItems]);
+
+  const handleLogout = useCallback(() => {
+    void dispatch(logoutAction());
+  }, [dispatch]);
 
   if (isOfferLoading) {
     return <Spinner />;
@@ -76,13 +89,13 @@ function OfferPage(): JSX.Element {
                 <li className="header__nav-item user">
                   <Link className="header__nav-link header__nav-link--profile" to="/favorites">
                     <div className="header__avatar-wrapper user__avatar-wrapper"></div>
-                    <span className="header__user-name user__name">Oliver.conner@gmail.com</span>
+                    <span className="header__user-name user__name">{userInfo?.email}</span>
                     <span className="header__favorite-count">{favoriteOffersCount}</span>
                   </Link>
                 </li>
                 <li className="header__nav-item">
-                  <Link className="header__nav-link" to="/login">
-                    <span className="header__signout">Sign out</span>
+                  <Link className="header__nav-link" to="/" onClick={handleLogout}>
+                    <span className="header__signout">Log out</span>
                   </Link>
                 </li>
               </ul>
@@ -94,7 +107,7 @@ function OfferPage(): JSX.Element {
         <section className="offer">
           <div className="offer__gallery-container container">
             <div className="offer__gallery">
-              {offer.images.map((image) => (
+              {visibleImages.map((image) => (
                 <div className="offer__image-wrapper" key={image}>
                   <img className="offer__image" src={image} alt={offer.title} />
                 </div>
@@ -132,9 +145,9 @@ function OfferPage(): JSX.Element {
                 <span className="offer__rating-value rating__value">{offer.rating}</span>
               </div>
               <ul className="offer__features">
-                <li className="offer__feature offer__feature--entire">{offer.type}</li>
-                <li className="offer__feature offer__feature--bedrooms">{offer.bedrooms} Bedrooms</li>
-                <li className="offer__feature offer__feature--adults">Max {offer.maxAdults} adults</li>
+                <li className="offer__feature offer__feature--entire">{getOfferTypeLabel(offer.type)}</li>
+                <li className="offer__feature offer__feature--bedrooms">{getBedroomLabel(offer.bedrooms)}</li>
+                <li className="offer__feature offer__feature--adults">{getAdultLabel(offer.maxAdults)}</li>
               </ul>
               <div className="offer__price">
                 <b className="offer__price-value">&euro;{offer.price}</b>
@@ -162,7 +175,7 @@ function OfferPage(): JSX.Element {
                 </div>
               </div>
               <section className="offer__reviews reviews">
-                <ReviewsList reviews={reviews} />
+                <ReviewsList reviews={sortedReviews} reviewsCount={reviews.length} />
                 {authorizationStatus === AuthorizationStatus.Auth && <ReviewForm offerId={offer.id} />}
               </section>
             </div>
@@ -178,7 +191,7 @@ function OfferPage(): JSX.Element {
           <section className="near-places places">
             <h2 className="near-places__title">Other places in the neighbourhood</h2>
             <OffersList
-              offers={nearbyOffers}
+              offers={visibleNearbyOffers}
               className="near-places__list places__list"
               cardClassName="near-places__card"
               imageWrapperClassName="near-places__image-wrapper"

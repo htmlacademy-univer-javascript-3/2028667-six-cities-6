@@ -4,13 +4,14 @@ import type { Review as ReviewType } from '../../types/review';
 
 type ReviewsListProps = {
   reviews: ReviewType[];
+  reviewsCount?: number;
 };
 
-function ReviewsList({ reviews }: ReviewsListProps): JSX.Element {
+function ReviewsList({ reviews, reviewsCount = reviews.length }: ReviewsListProps): JSX.Element {
   return (
     <>
       <h2 className="reviews__title">
-        Reviews &middot; <span className="reviews__amount">{reviews.length}</span>
+        Reviews &middot; <span className="reviews__amount">{reviewsCount}</span>
       </h2>
       <ul className="reviews__list">
         {reviews.map((review) => (

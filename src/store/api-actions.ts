@@ -4,17 +4,21 @@ import type { RootState } from '.';
 import { AuthorizationStatus } from '../const';
 import {
   fillCurrentOffer,
+  fillFavoriteOffers,
   fillNearbyOffers,
   fillOffers,
   fillReviews,
   requireAuthorization,
+  setError,
   setOfferLoading,
   setOffersLoading,
+  setReviewError,
   setReviewSubmitting,
+  setUserInfo,
   updateFavoriteOffer,
 } from './action';
 import type { Actions } from './action';
-import { saveToken } from '../services/token';
+import { dropToken, saveToken } from '../services/token';
 import type { AuthData } from '../types/auth-data';
 import type { AuthInfo } from '../types/auth-info';
 import type { NewReview } from '../types/new-review';
@@ -24,17 +28,45 @@ import { adaptServerReviewToClientReview } from '../types/server-review';
 import type { ServerReview } from '../types/server-review';
 
 type ThunkActionResult<R = Promise<void>> = ThunkAction<R, RootState, AxiosInstance, Actions>;
+const SERVER_ERROR_MESSAGE = 'Server is unavailable. Please try again later.';
+const REVIEW_ERROR_MESSAGE = 'Could not send your review. Please try again.';
 
 export const fetchOffersAction = (): ThunkActionResult => async (dispatch, _getState, api) => {
   dispatch(setOffersLoading(true));
-  const { data } = await api.get<ServerOffer[]>('/offers');
-  dispatch(fillOffers(data.map(adaptServerOfferToClientOffer)));
-  dispatch(setOffersLoading(false));
+
+  try {
+    const { data } = await api.get<ServerOffer[]>('/offers');
+    dispatch(fillOffers(data.map(adaptServerOfferToClientOffer)));
+    dispatch(setError(null));
+  } catch {
+    dispatch(setError(SERVER_ERROR_MESSAGE));
+  } finally {
+    dispatch(setOffersLoading(false));
+  }
+};
+
+export const fetchFavoriteOffersAction = (): ThunkActionResult => async (dispatch, _getState, api) => {
+  try {
+    const { data } = await api.get<ServerOffer[]>('/favorite');
+    dispatch(fillFavoriteOffers(data.map(adaptServerOfferToClientOffer)));
+    dispatch(setError(null));
+  } catch {
+    dispatch(setError(SERVER_ERROR_MESSAGE));
+  }
 };
 
 export const checkAuthAction = (): ThunkActionResult => async (dispatch, _getState, api) => {
-  await api.get('/login');
-  dispatch(requireAuthorization(AuthorizationStatus.Auth));
+  try {
+    const { data } = await api.get<AuthInfo>('/login');
+    dispatch(requireAuthorization(AuthorizationStatus.Auth));
+    dispatch(setUserInfo(data));
+    dispatch(setError(null));
+    await dispatch(fetchFavoriteOffersAction());
+  } catch {
+    dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+    dispatch(setUserInfo(null));
+    dispatch(fillFavoriteOffers([]));
+  }
 };
 
 export const loginAction = ({ email, password }: AuthData): ThunkActionResult => async (dispatch, _getState, api) => {
@@ -42,6 +74,18 @@ export const loginAction = ({ email, password }: AuthData): ThunkActionResult =>
 
   saveToken(data.token);
   dispatch(requireAuthorization(AuthorizationStatus.Auth));
+  dispatch(setUserInfo(data));
+  dispatch(setError(null));
+  await dispatch(fetchFavoriteOffersAction());
+};
+
+export const logoutAction = (): ThunkActionResult => async (dispatch, _getState, api) => {
+  await api.delete('/logout');
+  dropToken();
+  dispatch(requireAuthorization(AuthorizationStatus.NoAuth));
+  dispatch(setUserInfo(null));
+  dispatch(fillFavoriteOffers([]));
+  dispatch(setError(null));
 };
 
 export const fetchOfferPageDataAction = (offerId: string): ThunkActionResult => async (dispatch, _getState, api) => {
@@ -57,10 +101,12 @@ export const fetchOfferPageDataAction = (offerId: string): ThunkActionResult => 
     dispatch(fillCurrentOffer(adaptServerOfferToClientOffer(offerResponse.data)));
     dispatch(fillNearbyOffers(nearbyOffersResponse.data.map(adaptServerOfferToClientOffer)));
     dispatch(fillReviews(reviewsResponse.data.map(adaptServerReviewToClientReview)));
+    dispatch(setError(null));
   } catch {
     dispatch(fillCurrentOffer(null));
     dispatch(fillNearbyOffers([]));
     dispatch(fillReviews([]));
+    dispatch(setError(SERVER_ERROR_MESSAGE));
   } finally {
     dispatch(setOfferLoading(false));
   }
@@ -68,10 +114,14 @@ export const fetchOfferPageDataAction = (offerId: string): ThunkActionResult => 
 
 export const postReviewAction = (offerId: string, reviewData: NewReview): ThunkActionResult => async (dispatch, _getState, api) => {
   dispatch(setReviewSubmitting(true));
+  dispatch(setReviewError(null));
 
   try {
     const { data } = await api.post<ServerReview[]>(`/comments/${offerId}`, reviewData);
     dispatch(fillReviews(data.map(adaptServerReviewToClientReview)));
+    dispatch(setError(null));
+  } catch {
+    dispatch(setReviewError(REVIEW_ERROR_MESSAGE));
   } finally {
     dispatch(setReviewSubmitting(false));
   }
@@ -79,6 +129,12 @@ export const postReviewAction = (offerId: string, reviewData: NewReview): ThunkA
 
 export const updateFavoriteStatusAction = (offerId: string, isFavorite: boolean): ThunkActionResult => async (dispatch, _getState, api) => {
   const favoriteStatus = Number(!isFavorite);
-  const { data } = await api.post<ServerOffer>(`/favorite/${offerId}/${favoriteStatus}`);
-  dispatch(updateFavoriteOffer(adaptServerOfferToClientOffer(data)));
+
+  try {
+    const { data } = await api.post<ServerOffer>(`/favorite/${offerId}/${favoriteStatus}`);
+    dispatch(updateFavoriteOffer(adaptServerOfferToClientOffer(data)));
+    dispatch(setError(null));
+  } catch {
+    dispatch(setError(SERVER_ERROR_MESSAGE));
+  }
 };

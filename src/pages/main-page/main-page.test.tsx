@@ -6,6 +6,9 @@ import { renderWithProviders } from '../../test-utils';
 import MainPage from './main-page';
 
 const navigateMock = vi.fn();
+const logoutAction = vi.fn(() => ({
+  type: 'user/logout',
+}));
 const updateFavoriteStatusAction = vi.fn((offerId: string, isFavorite: boolean) => ({
   type: 'favorite/update',
   payload: { offerId, isFavorite },
@@ -16,6 +19,7 @@ vi.mock('../../components/map/map', () => ({
 }));
 
 vi.mock('../../store/api-actions', () => ({
+  logoutAction: () => logoutAction(),
   updateFavoriteStatusAction: (...args: [string, boolean]) => updateFavoriteStatusAction(...args),
 }));
 
@@ -44,23 +48,32 @@ describe('MainPage', () => {
     expect(screen.getByText('No places to stay available')).toBeInTheDocument();
   });
 
-  it('changes auth state on sign out click', async () => {
+  it('dispatches logout action on log out click', async () => {
     renderWithProviders(<MainPage />, {
       preloadedState: {
         user: {
           authorizationStatus: AuthorizationStatus.Auth,
+          userInfo: {
+            id: 1,
+            email: 'user@mail.com',
+            name: 'User',
+            avatarUrl: 'img/avatar.jpg',
+            isPro: false,
+            token: 'token',
+          },
         },
         catalog: {
           offers: [makeOffer({ city: 'Paris' })],
+          favoriteOffers: [],
           isOffersLoading: false,
         },
       },
     });
 
-    fireEvent.click(screen.getByText('Sign out'));
+    fireEvent.click(screen.getByText('Log out'));
 
     await waitFor(() => {
-      expect(screen.getByText('Sign in')).toBeInTheDocument();
+      expect(logoutAction).toHaveBeenCalled();
     });
   });
 
@@ -84,6 +97,14 @@ describe('MainPage', () => {
       preloadedState: {
         user: {
           authorizationStatus: AuthorizationStatus.Auth,
+          userInfo: {
+            id: 1,
+            email: 'user@mail.com',
+            name: 'User',
+            avatarUrl: 'img/avatar.jpg',
+            isPro: false,
+            token: 'token',
+          },
         },
         catalog: {
           offers: [makeOffer({ id: '1', city: 'Paris', title: 'Paris offer', isFavorite: false })],
